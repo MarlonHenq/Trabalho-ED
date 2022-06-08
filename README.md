@@ -5,4 +5,3 @@ Trabalho Estrutura de Dados
 Gustavo Henrique Cardoso de Araújo
 
 Marlon Henrique Sanches
-
