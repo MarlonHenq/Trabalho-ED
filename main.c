@@ -27,11 +27,11 @@ void helpMenu(){
     printf("\n");
     printf("Autores: \n");
     printf(contrastColor "Marlon Henrique Sanches - RA: 2407388\n" resetColor);
-    printf(contrastColor "Gustavo Henrique Cardoso de Araújo - RA: AAAAAAA \n" resetColor);
+    printf(contrastColor "Gustavo Henrique Cardoso de Araújo - RA: 2386712 \n" resetColor);
     printf("=========================================\n");
     // Autores: 
     // Marlon Henrique Sanches - RA: 2407388
-    // Gustavo Henrique Cardoso de Araújo - RA: AAAAAAA
+    // Gustavo Henrique Cardoso de Araújo - RA: 2386712
 
     printf("\n");
 
