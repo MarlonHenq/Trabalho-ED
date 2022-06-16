@@ -14,13 +14,13 @@ Marlon Henrique Sanches
 
 # Como rodar o código:
 - Paro rodar o código é nescessário compila-lo
-- Para isso poda-se utilizar uma IDE com compilador e execução, ou um compilador para gerar um arquivo executável pelo seu sistema e logo após executar esse novo arquivo.
+- Para isso pode-se utilizar uma IDE com compilador e execução, ou um compilador para gerar um arquivo executável pelo seu sistema e logo após executar esse novo arquivo.
 
 <br>
   
-- Tutorial com GCC:
+- Tutorial com GCC (no geral Linux):
 
-- Para compilar o seu 'main.c' com o GCC, verifique tenha o GCC em seu computador, e após isso, estando no mesmo diretório que o arquivo 'main.c' execute:
+- Para compilar o seu 'main.c' com o GCC, verifique se possui o GCC em seu computador, e após isso, estando no mesmo diretório que o arquivo 'main.c' execute:
 gcc main.c
 
 - Isso irá gerar um arquivo 'a.out' com o programa compilado.
