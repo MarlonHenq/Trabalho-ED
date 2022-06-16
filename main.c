@@ -9,8 +9,37 @@
 
 #define resetColor   "\x1b[0m"
 
+void helpMenu();
+
 int main(){
     
 
     return 0;
+}
+
+
+void helpMenu(){
+    int opcaoUsuario = 0;
+
+    system("@cls||clear");
+    printf("================Menu Help================\n");
+    printf("Trabalho de Estruturas de Dados\n");
+    printf("\n");
+    printf("Autores: \n");
+    printf(contrastColor "Marlon Henrique Sanches - RA: 2407388\n" resetColor);
+    printf(contrastColor "Gustavo Henrique Cardoso de Araújo - RA: AAAAAAA \n" resetColor);
+    printf("=========================================\n");
+    // Autores: 
+    // Marlon Henrique Sanches - RA: 2407388
+    // Gustavo Henrique Cardoso de Araújo - RA: AAAAAAA
+
+    printf("\n");
+
+    printf("0 - Sair\n");
+    scanf("%d", &opcaoUsuario);
+    getchar();
+    if (opcaoUsuario>=0) {
+        system("@cls||clear"); //Limpa Tela
+        return;
+    }
 }
