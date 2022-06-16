@@ -19,9 +19,9 @@ int main(){
 
 
 void helpMenu(){
-    int opcaoUsuario = 0;
+    int userOp = 0;
 
-    system("@cls||clear");
+    system("@cls||clear"); //Limpa Tela
     printf("================Menu Help================\n");
     printf("Trabalho de Estruturas de Dados\n");
     printf("\n");
@@ -36,9 +36,9 @@ void helpMenu(){
     printf("\n");
 
     printf("0 - Sair\n");
-    scanf("%d", &opcaoUsuario);
+    scanf("%d", &userOp);
     getchar();
-    if (opcaoUsuario>=0) {
+    if (userOp>=0) {
         system("@cls||clear"); //Limpa Tela
         return;
     }
