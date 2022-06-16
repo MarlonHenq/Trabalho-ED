@@ -15,28 +15,31 @@ const productionTimeVariation = 10; // 10%
 const KWHCust = 1; // 1 real o Kilo Watt Hora
 const hourInSeconds = 3600; //Total de segundos que tem em uma hora
 
-typedef struct produto{
+typedef struct product{
     int id; //ID que receberá em ordem de carregamento do arquivo
     char productionType[2]; //NOME abreviado (C - coxinha | P - Peixe | A - Almôndega)
     float productionCust; //Custo de Produção (EM REAIS)
     float salePrice; //Preço Atacado (Preço da venda no atacado) (EM REAIS)
     int deteriorationTime; //Tempo de deteriorização (EM SEGUNDOS) 
     int productionProbability; //Probabilidade de ser produzido (%)
-}Tproduto;
+    struct product *next; //Ponteiro para o próximo produto
+}TProduct;
 
-typedef struct maquina{
+typedef struct machine{
     int id; //ID que receberá em ordem de carregamento do arquivo
     char model[30]; //Modelo
     char productionType[2]; //Tipo de produto processado (T repesentando todos)
     int productionTime; //Tempo de produção quem pode variar +/- 10% (Constante productionTimeVariation)
     int consumption; //Consumo em KWH
     int price; //Preço em reais da compra da maquina
-}TMaquina;
+    struct machine *next; //Ponteiro para o próximo produto
+}TMachine;
 
 void helpMenu();
 
+
 int main(){
-    
+
 
     return 0;
 }
