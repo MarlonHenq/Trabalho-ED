@@ -64,15 +64,34 @@ typedef struct simulation{
     struct simulation *next; //Ponteiro para o próximo produto
 }TSimulation;
 
+typedef struct line{
+    //struct batch *product;
+    char type;          //Tipo de Produto
+    int entryTime;      //Tempo de Entrada
+    struct line *next;  //Próximo da Fila
+}TLine;
+
+typedef struct machineOnProduction{
+    int id; //ID
+    char model[30]; //Modelo
+    char productionType[2]; //Tipo de produto processado (T repesentando todos)
+    int productionTime[3]; //Tempo de produção quem pode variar +/- 10% (Constante productionTimeVariation)
+    int consumption; //Consumo em KWH
+    int price; //Preço em reais da compra da maquina
+    struct machine *next; //Ponteiro para o próximo produto
+    TLine *first; //Ponteiro para o primeiro produto da linha
+    int numerOfProducts; //Quantidade de produtos na linha
+    int timeOfProduction; //Tempo de produção do produto em destaque
+}TMachineOnProduction;
+
 
 #pragma endregion
 
 #pragma region "Funções Menu" //Submenus
 void creditsMenu();
-void createSimulationFileMenu();
 #pragma endregion
 
-#pragma region "Funções Internas" //Alocação de memória e veficações
+#pragma region "Funções Internas" //Alocação de memória | veficações | calculos internos
 TProduct *alocateProductMemorie(int id, char productionType[2], float productionCust, float salePrice, int deteriorationTime, int productionProbability){
     TProduct *newProduct = (TProduct *)malloc(sizeof(TProduct)); //Alocação de memória para o novo produto
 
@@ -156,6 +175,31 @@ bool fileExists(char fileName[20])
         return true;
     }
     return false;
+}
+
+TMachineOnProduction *alocateMachineOnProductionMemorie(int id, char model[30], char productionType[2], int productionTime[3], int consumption, int price){
+    TMachineOnProduction *newMachineOnProduction = (TMachineOnProduction *)malloc(sizeof(TMachineOnProduction)); //Alocação de memória para a nova maquina
+
+    if (newMachineOnProduction == NULL){ //Verificação de erro de alocação de memória
+        printf(errorColor"Erro ao alocar memória para a máquina!\n"resetColor);
+        return NULL;
+    }
+
+    //Atribuição de valores
+    newMachineOnProduction->id = id;
+    strcpy(newMachineOnProduction->model, model);
+    strcpy(newMachineOnProduction->productionType, productionType);
+    newMachineOnProduction->productionTime[0] = productionTime[0];
+    newMachineOnProduction->productionTime[1] = productionTime[1];
+    newMachineOnProduction->productionTime[2] = productionTime[2];
+    newMachineOnProduction->consumption = consumption;
+    newMachineOnProduction->price = price;
+    newMachineOnProduction->next = NULL;
+    newMachineOnProduction->first = NULL;
+    newMachineOnProduction->numerOfProducts = 0;
+    newMachineOnProduction->timeOfProduction = 0;
+
+    return newMachineOnProduction;
 }
 
 #pragma endregion
@@ -269,6 +313,66 @@ void printMachines(THeadMachine *headMachine){
     }
 }
 
+TMachineOnProduction *loadMachinesOnProduction( THeadMachine *headMachine){
+    FILE *file = fopen(simulationFileName, "r"); //Abertura do arquivo
+    if (file == NULL){ //Verificação de erro de abertura do arquivo
+        printf(errorColor"Erro ao abrir o arquivo de simulação!\n"resetColor);
+        return NULL;
+    }
+
+    int idCount = 1;
+
+    int machineIdToSearch = 0; 
+    int numberMachines = 0; 
+
+    TMachineOnProduction *listMachineOnProduction = NULL;
+
+    while (!feof(file)){ //Lendo o arquivo até o fim
+        if (feof(file)) break;
+
+        fscanf(file, "%d %d", &machineIdToSearch, &numberMachines);
+        // printf("%d %d\n", machineIdToSearch, numberMachines); //Debug
+
+        if (machineIdToSearch == 0 || machineIdToSearch > headMachine->idCount){ //Verificação de erro de leitura do arquivo
+            printf(errorColor"O arquivo de simulação apresenta uma máquina inválida, verifique-o!\n"resetColor);
+            return NULL;
+        }
+
+        //Buscando Maquina nas maquinas existentes
+        TMachine *machine = headMachine->first;
+        while (machine->next != NULL){
+            if (machine->id == machineIdToSearch){ //ACHOU NAS MAQUINAS EXISTENTES
+                for (int i = 0; i < numberMachines; i++){ //DUPLICA QUANTAS VEZES FOI DITO NO ARQUIVO
+                    TMachineOnProduction *newMachineOnProduction = alocateMachineOnProductionMemorie(idCount, machine->model, machine->productionType, machine->productionTime, machine->consumption, machine->price);
+                    // printf("Rodei %d\n", i); //DEBUG ALTAMENTE SOFISTICADO
+                    // printf("ID %d\n", idCount);
+                    if (newMachineOnProduction == NULL) return;
+
+                    if (listMachineOnProduction == NULL){ //Caso seja a primeira maquina
+                        listMachineOnProduction = newMachineOnProduction;
+                    }
+                    else{ //Caso não seja a primeira maquina
+                        TMachineOnProduction *aux = listMachineOnProduction;
+                        while (aux->next != NULL){
+                            aux = aux->next;
+                        }
+                        aux->next = newMachineOnProduction;
+                    }
+
+                    idCount = idCount + 1;
+                }
+                
+                
+                break;
+            }
+            machine = machine->next;
+        }
+        
+    }
+
+    return listMachineOnProduction;
+    
+}
 #pragma endregion
 
 #pragma region "Funnções de Criação de Arquivos" //Criação de arquivos
@@ -304,6 +408,23 @@ void createSimulationFile(){
 #pragma endregion
 
 #pragma region "Funções de Simulação" //Simulação
+void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
+    printf(listColor"Iniciando simulação...\n"resetColor);
+    TMachineOnProduction *machineOnProduction = loadMachinesOnProduction(headMachine);
+    if (machineOnProduction == NULL) return;
+
+    //print machines on production
+    printf(listColor "Máquinas em produção:\n" resetColor);
+    TMachineOnProduction *aux = machineOnProduction;
+    while (aux != NULL){
+        printf("%d\n", aux->id);
+        if (aux->next != NULL)
+            aux = aux->next;
+        else
+            break;
+    }
+    
+}
 #pragma endregion
 
 int main(){
@@ -318,6 +439,7 @@ int main(){
         printf(contrastColor "2" resetColor " - Imprimir Maquinas e Produtos disponíveis\n");
         printf(contrastColor "3" resetColor " - Gerar um arquivo de uma nova simulação (%s)\n", simulationFileName);
         printf(contrastColor "4" resetColor " - Carregar e rodar uma nova simulação (%s))\n", simulationFileName);
+        printf(contrastColor "5" resetColor " - Sair\n");
         printf("\n");
         printf("Escolha uma opção: ");
         scanf("%d", &userOp);
@@ -369,16 +491,23 @@ int main(){
 
             case 4:
                 system("@cls||clear"); //Limpa Tela
-                if (fileExists(simulationFileName)){
-                    printf("CU\n");
+                if(listProducts->first != NULL || listMachines->first != NULL){
+                    if (fileExists(simulationFileName)){
+                        simulation(listProducts, listMachines);
+                    }
+                    else{
+                        printf(errorColor"Arquivo de simulação não encontrado\n"resetColor);
+                    }
                 }
                 else{
-                    printf(errorColor"Arquivo de simulação não encontrado\n"resetColor);
+                    printf(errorColor"Não há Produtos ou Maquinas carregadas\n"resetColor);
                 }
             break;
 
             case 5:
-
+                system("@cls||clear"); //Limpa Tela
+                printf(contrastColor "Bye!\n" resetColor);
+                exit(1);
             break;
 
             case 42:
