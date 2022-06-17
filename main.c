@@ -340,7 +340,7 @@ TMachineOnProduction *loadMachinesOnProduction( THeadMachine *headMachine){
 
         //Buscando Maquina nas maquinas existentes
         TMachine *machine = headMachine->first;
-        while (machine->next != NULL){
+        while (machine!= NULL){
             if (machine->id == machineIdToSearch){ //ACHOU NAS MAQUINAS EXISTENTES
                 for (int i = 0; i < numberMachines; i++){ //DUPLICA QUANTAS VEZES FOI DITO NO ARQUIVO
                     TMachineOnProduction *newMachineOnProduction = alocateMachineOnProductionMemorie(idCount, machine->model, machine->productionType, machine->productionTime, machine->consumption, machine->price);
@@ -361,7 +361,6 @@ TMachineOnProduction *loadMachinesOnProduction( THeadMachine *headMachine){
 
                     idCount = idCount + 1;
                 }
-                
                 
                 break;
             }
@@ -386,11 +385,15 @@ void createSimulationFile(){
 
     int machineID = NULL;
     int numberOfMachines = NULL;
+    int lnNum = 0;
 
     while (1==1){
         printf("Digite o ID da máquina que deseja adicionar (Para parar de adicionar digite '0'): ");
         scanf("%d", &machineID);
         if (machineID != 0){
+            if(lnNum>0){//Impede erro de repetição por ultima linha em branco
+                fprintf(file,"\n");
+            }
             fprintf(file, "%d ", machineID);
         }
         else{
@@ -399,7 +402,8 @@ void createSimulationFile(){
 
         printf("Digite o número de máquinas que deseja adicionar: ");
         scanf("%d", &numberOfMachines);
-        fprintf(file, "%d\n", numberOfMachines);
+        fprintf(file, "%d", numberOfMachines);
+        lnNum=1;
     }
 
     fclose(file); //Fechando o arquivo
@@ -417,7 +421,7 @@ void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
     printf(listColor "Máquinas em produção:\n" resetColor);
     TMachineOnProduction *aux = machineOnProduction;
     while (aux != NULL){
-        printf("%d\n", aux->id);
+        printf("%d %s\n", aux->id,aux->model);
         if (aux->next != NULL)
             aux = aux->next;
         else
