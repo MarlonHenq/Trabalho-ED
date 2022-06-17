@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 //Provável adição de um randon math
 
 #pragma region "Cores"
@@ -10,6 +11,7 @@
 #define contrastColor    "\x1b[36m"
 
 #define resetColor   "\x1b[0m"
+
 #pragma endregion
 
 #pragma region "Constantes"
@@ -22,6 +24,7 @@ const hourInSeconds = 3600; //Total de segundos que tem em uma hora
 const char machinesFileName[20] = "Maquinas.csv"; //Arquivos para carregamento de dados
 const char productsFileName[20] = "Produtos.csv";
 const char simulationFileName[20] = "Simulacao.csv";
+
 #pragma endregion
 
 #pragma region "Structs"
@@ -39,7 +42,7 @@ typedef struct machine{
     int id; //ID que receberá em ordem de carregamento do arquivo
     char model[30]; //Modelo
     char productionType[2]; //Tipo de produto processado (T repesentando todos)
-    int productionTime; //Tempo de produção quem pode variar +/- 10% (Constante productionTimeVariation)
+    int productionTime[3]; //Tempo de produção quem pode variar +/- 10% (Constante productionTimeVariation)
     int consumption; //Consumo em KWH
     int price; //Preço em reais da compra da maquina
     struct machine *next; //Ponteiro para o próximo produto
@@ -69,7 +72,7 @@ void creditsMenu();
 void createSimulationFileMenu();
 #pragma endregion
 
-#pragma region "Funções Internas" //Alocação de memória
+#pragma region "Funções Internas" //Alocação de memória e veficações
 TProduct *alocateProductMemorie(int id, char productionType[2], float productionCust, float salePrice, int deteriorationTime, int productionProbability){
     TProduct *newProduct = (TProduct *)malloc(sizeof(TProduct)); //Alocação de memória para o novo produto
 
@@ -90,7 +93,7 @@ TProduct *alocateProductMemorie(int id, char productionType[2], float production
     return newProduct;
 }
 
-TMachine *alocateMachineMemorie(int id, char model[30], char productionType[2], int productionTime, int consumption, int price){
+TMachine *alocateMachineMemorie(int id, char model[30], char productionType[2], int productionTime[3], int consumption, int price){
     TMachine *newMachine = (TMachine *)malloc(sizeof(TMachine)); //Alocação de memória para a nova maquina
     
     if (newMachine == NULL){ //Verificação de erro de alocação de memória
@@ -102,7 +105,9 @@ TMachine *alocateMachineMemorie(int id, char model[30], char productionType[2], 
     newMachine->id = id;
     strcpy(newMachine->model, model);
     strcpy(newMachine->productionType, productionType);
-    newMachine->productionTime = productionTime;
+    newMachine->productionTime[0] = productionTime[0];
+    newMachine->productionTime[1] = productionTime[1];
+    newMachine->productionTime[2] = productionTime[2];
     newMachine->consumption = consumption;
     newMachine->price = price;
     newMachine->next = NULL;
@@ -142,9 +147,20 @@ TSimulation *alocateSimulationMemorie(int idMachine, int numberOfMachines){
     return newSimulation;
 }
 
+bool fileExists(char fileName[20])
+{
+    FILE *file = fopen(fileName, "r");
+    if (file)
+    {
+        fclose(file);
+        return true;
+    }
+    return false;
+}
+
 #pragma endregion
 
-#pragma region "Funções de Leitura e Print" //Carregamento de arquivos
+#pragma region "Funções de Leitura e Print"
 void loadProducts(THeadProduct **headProduct){
     FILE *file = fopen(productsFileName, "r"); //Abertura do arquivo
     
@@ -212,13 +228,13 @@ void loadMachines(THeadMachine **headMachine){
     //Variáveis de atribuição
     char model[30];
     char productionType[2];
-    int productionTime;
+    int productionTime[3];
     int consumption;
     int price;
     
     //Carregamento de dados
-    while (fscanf(file, "%s %s %d %d %d", model, productionType, &productionTime, &consumption, &price) != EOF){
-        fscanf(file, "%d %s %s %d %d %d", &id, model, productionType, &productionTime, &consumption, &price);
+    while (fscanf(file, "%s %s %d %d %d %d %d", &model, &productionType, &productionTime[0], &productionTime[1], &productionTime[2], &consumption, &price) != EOF){
+        fscanf(file, "%d %s %s %d %d %d %d %d", &id, &model, &productionType, &productionTime[0], &productionTime[1], &productionTime[2], &consumption, &price);
         TMachine *newMachine = alocateMachineMemorie(id, model, productionType, productionTime, consumption, price);
         
         if (newMachine == NULL) return; //Verificação de erro de alocação de memória
@@ -243,12 +259,12 @@ void printMachines(THeadMachine *headMachine){
     printf(listColor "Foram carregadas %d máquinas:\n" resetColor, headMachine->idCount);
     TMachine *aux = headMachine->first;
 
-        printf("ID   | Tipo  | Tempo  | Consumo |   Preço    |  Modelo\n");
-        printf("-----|-------|--------|---------|------------|------------\n");
+        printf("ID   | Tipo  |     Tempo    | Consumo |   Preço    |  Modelo\n");
+        printf("-----|-------|----|----|----|---------|------------|------------\n");
 
     while (aux != NULL){
         //Imprime uma tabela com os dados das máquinas
-        printf("%d    |   %s   |   %d   |   %d    |   %d   |   %s\n", aux->id, aux->productionType, aux->productionTime, aux->consumption, aux->price, aux->model);
+        printf("%d    |   %s   | %d | %d | %d |   %d    |   %d   |   %s\n", aux->id, aux->productionType, aux->productionTime[0], aux->productionTime[1], aux->productionTime[2], aux->consumption, aux->price, aux->model);
         aux = aux->next;
     }
 }
@@ -289,6 +305,7 @@ void createSimulationFile(){
 
 #pragma region "Funções de Simulação" //Simulação
 #pragma endregion
+
 int main(){
     THeadProduct *listProducts = alocateHeadProductMemorie(); //Alocação de memória para a cabeça da lista de produtos
     THeadMachine *listMachines = alocateHeadMachineMemorie(); //Alocação de memória para a cabeça da lista de máquinas
@@ -310,12 +327,24 @@ int main(){
             case 1:
                 system("@cls||clear"); //Limpa Tela
 
-                loadProducts(&listProducts);
-                printProducts(listProducts);
-                printf("\n");
-                loadMachines(&listMachines);
-                printMachines(listMachines);
-                printf("\n");
+                if (fileExists(machinesFileName) && fileExists(productsFileName)){
+                    if(listProducts->first != NULL || listMachines->first != NULL){
+                        printf(errorColor"Já existe um arquivo de Produtos ou Maquias carregado!\n"resetColor);
+                        break;
+                    }
+                    else{
+                        loadProducts(&listProducts);
+                        printProducts(listProducts);
+                        printf("\n");
+                        loadMachines(&listMachines);
+                        printMachines(listMachines);
+                        printf("\n");
+                    }
+                }
+                else{
+                    printf(errorColor"Arquivo de Maquinas ou Produtos não existe!\n"resetColor);
+                    break;
+                }
             break;
             
             case 2:
@@ -340,7 +369,12 @@ int main(){
 
             case 4:
                 system("@cls||clear"); //Limpa Tela
-
+                if (fileExists(simulationFileName)){
+                    printf("CU\n");
+                }
+                else{
+                    printf(errorColor"Arquivo de simulação não encontrado\n"resetColor);
+                }
             break;
 
             case 5:
