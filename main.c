@@ -313,7 +313,7 @@ void printMachines(THeadMachine *headMachine){
     }
 }
 
-TMachineOnProduction *loadMachinesOnProduction( THeadMachine *headMachine){
+TMachineOnProduction *loadMachinesOnProduction( THeadMachine *headMachine,int *machinesTotalCost){
     FILE *file = fopen(simulationFileName, "r"); //Abertura do arquivo
     if (file == NULL){ //Verificação de erro de abertura do arquivo
         printf(errorColor"Erro ao abrir o arquivo de simulação!\n"resetColor);
@@ -358,6 +358,8 @@ TMachineOnProduction *loadMachinesOnProduction( THeadMachine *headMachine){
                         }
                         aux->next = newMachineOnProduction;
                     }
+
+                    (*machinesTotalCost) += (machine->price);
 
                     idCount = idCount + 1;
                 }
@@ -412,9 +414,26 @@ void createSimulationFile(){
 #pragma endregion
 
 #pragma region "Funções de Simulação" //Simulação
+
+void informationPanel(){
+    printf(contrastColor "===================Info==================\n" resetColor);
+    printf(listColor "=== Lotes Empacotados ===\n" resetColor);
+    printf("Coxinha: %d  | Lucro: %.2f\n");
+    printf("Peixe: %d  | Lucro: %.2f\n");
+    printf("Almondega: %d  | Lucro: %.2f\n");
+    printf("Totais: %d  | Lucro: %.2f\n");
+    printf(listColor "=== Lotes Disperdicados ===\n" resetColor);
+    printf("Coxinha: %d  | Custo: %.2f\n");
+    printf("Peixe: %d  | Custo: %.2f\n");
+    printf("Almondega: %d  | Custo: %.2f\n");
+    printf("Totais: %d  | Custo: %.2f\n");
+    printf(listColor "=== Máquinas ===\n" resetColor);
+}
+
 void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
     printf(listColor"Iniciando simulação...\n"resetColor);
-    TMachineOnProduction *machineOnProduction = loadMachinesOnProduction(headMachine);
+    int machinesTotalCost = 0;
+    TMachineOnProduction *machineOnProduction = loadMachinesOnProduction(headMachine,&machinesTotalCost);
     if (machineOnProduction == NULL) return;
 
     //print machines on production
@@ -427,6 +446,7 @@ void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
         else
             break;
     }
+    printf(errorColor "Custo total das máquinas:" resetColor "%d\n",machinesTotalCost);
     
 }
 #pragma endregion
