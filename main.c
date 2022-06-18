@@ -33,7 +33,7 @@ const char simulationFileName[20] = "Simulacao.csv";
 typedef struct product{
     int id; //ID que receberá em ordem de carregamento do arquivo
     char productionType[2]; //NOME abreviado (C - coxinha | P - Peixe | A - Almôndega)
-    float productionCust; //Custo de Produção (EM REAIS)
+    float productionCost; //Custo de Produção (EM REAIS)
     float salePrice; //Preço Atacado (Preço da venda no atacado) (EM REAIS)
     int deteriorationTime; //Tempo de deteriorização (EM SEGUNDOS) 
     int productionProbability; //Probabilidade de ser produzido (%)
@@ -94,7 +94,7 @@ void creditsMenu();
 #pragma endregion
 
 #pragma region "Funções Internas" //Alocação de memória | veficações | calculos internos
-TProduct *alocateProductMemorie(int id, char productionType[2], float productionCust, float salePrice, int deteriorationTime, int productionProbability){
+TProduct *alocateProductMemorie(int id, char productionType[2], float productionCost, float salePrice, int deteriorationTime, int productionProbability){
     TProduct *newProduct = (TProduct *)malloc(sizeof(TProduct)); //Alocação de memória para o novo produto
 
     if (newProduct == NULL){ //Verificação de erro de alocação de memória
@@ -105,7 +105,7 @@ TProduct *alocateProductMemorie(int id, char productionType[2], float production
     //Atribuição de valores
     newProduct->id = id;
     strcpy(newProduct->productionType, productionType);
-    newProduct->productionCust = productionCust;
+    newProduct->productionCost = productionCost;
     newProduct->salePrice = salePrice;
     newProduct->deteriorationTime = deteriorationTime;
     newProduct->productionProbability = productionProbability;
@@ -244,15 +244,15 @@ void loadProducts(THeadProduct **headProduct){
 
     //Variáveis de atribuição
     char productionType[2];
-    float productionCust;
+    float productionCost;
     float salePrice;
     int deteriorationTime;
     int productionProbability;
 
     //Carregamento de dados
-    while (fscanf(file, "%s %f %f %d %d", productionType, &productionCust, &salePrice, &deteriorationTime, &productionProbability) != EOF){
-        fscanf(file, "%d %s %f %f %d %d", &id, &productionType, &productionCust, &salePrice, &deteriorationTime, &productionProbability);
-        TProduct *newProduct = alocateProductMemorie(id, productionType, productionCust, salePrice, deteriorationTime, productionProbability);
+    while (fscanf(file, "%s %f %f %d %d", productionType, &productionCost, &salePrice, &deteriorationTime, &productionProbability) != EOF){
+        fscanf(file, "%d %s %f %f %d %d", &id, &productionType, &productionCost, &salePrice, &deteriorationTime, &productionProbability);
+        TProduct *newProduct = alocateProductMemorie(id, productionType, productionCost, salePrice, deteriorationTime, productionProbability);
 
         if (newProduct == NULL) return; //Verificação de erro de alocação de memória
         
@@ -282,7 +282,7 @@ void printProducts(THeadProduct *headProduct){
 
     while (aux != NULL){
         //Imprime uma tabela com os dados dos produtos
-        printf("%d   |   %s   |   %f   |   %f   |   %d   |   %d   |\n", aux->id, aux->productionType, aux->productionCust, aux->salePrice, aux->deteriorationTime, aux->productionProbability);
+        printf("%d   |   %s   |   %f   |   %f   |   %d   |   %d   |\n", aux->id, aux->productionType, aux->productionCost, aux->salePrice, aux->deteriorationTime, aux->productionProbability);
         aux = aux->next;
     }
 }
@@ -429,7 +429,7 @@ void progressBarPrinter(int percent){
     for (int i = 0; i < emptyBars; i++){
         printf(" ");
     }
-    printf("] %d%%\n", percent);
+    printf("] %d%% ", percent);
 }
 
 void tuxPrinter(int number){
@@ -458,9 +458,15 @@ void progressPrint(int totalTime, int totalGain, int totalCost){
     tuxPrinter(percentTime);
 
     printf(contrastColor"Tempo:\n"resetColor);
+    printf("%d ", totalTime);
     progressBarPrinter(percentTime);
+    printf("%d\n", twoYearsInSeconds);
+
     printf(contrastColor"Dinheiro:\n"resetColor);
+    printf("%d ", totalGain);
     progressBarPrinter(percentMoney);
+    printf("%d", totalCost);
+
     printf("\n");
 }
 
@@ -550,9 +556,21 @@ void addToLine(TProduct *product, TMachineOnProduction **machineOnProduction,int
     }
 }
 
+float getCostByProduct(THeadProduct *products, char type){
+    TProduct *aux = products->first;
+    while(aux!=NULL){
+        if(aux->productionType == type){
+            return aux->productionCost;
+        }
+        aux = aux->next;
+    }
+    return 0;
+    
+}
+
 simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProductionm, int machinesTotalCost){
     char newProduct = NULL;
-    int totalCust = machinesTotalCost;
+    int totalCost = machinesTotalCost;
     int totalGain = 0;
     int totalTime = 0;
 
@@ -560,25 +578,29 @@ simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProduction
         //CONDIÇÔES DE PARADA:
         //1. Se o tempo de simulação for maior 2 anos
         if (totalTime >= twoYearsInSeconds){
-            progressPrint(totalTime, totalGain, totalCust);
+            progressPrint(totalTime, totalGain, totalCost);
             return;
         }
         //2. Se o Ganho passar a superar o custo total (Ou seja, passar a ter lucro)
-        if (totalGain >= totalCust){
-            progressPrint(totalTime, totalGain, totalCust);
+        if (totalGain >= totalCost){
+            progressPrint(totalTime, totalGain, totalCost);
             return;
         }
 
         //FUNCIONAMETO SEGUNDO POR SEGUNDO:
         if (totalTime % 2 == 0){ //GERA UM NOVO PRODUTO PARA SER ADICIONADO A LINHA a cada 2 segundos
             newProduct = randomProduct();
+
+            //ADD PREÇO de custo
+            totalCost += getCostByProduct(products, newProduct);
+
             //ADD NA LISTA
         }
 
 
         //PRINT:
         if(totalTime % 500000 == 0){ //Atualiza a tela a cada 500000 segundos
-            progressPrint(totalTime, totalGain, totalCust);
+            progressPrint(totalTime, totalGain, totalCost);
         }
         
         //ATUALIZAÇÃO DE VARIÁVEIS:
