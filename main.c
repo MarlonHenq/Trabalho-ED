@@ -374,6 +374,22 @@ TMachineOnProduction *loadMachinesOnProduction( THeadMachine *headMachine,int *m
     return listMachineOnProduction;
     
 }
+
+void informationPanel(){
+    printf(contrastColor "===================Info==================\n" resetColor);
+    printf(listColor "=== Lotes Empacotados ===\n" resetColor);
+    printf("Coxinha: %d  | Lucro: %.2f\n");
+    printf("Peixe: %d  | Lucro: %.2f\n");
+    printf("Almondega: %d  | Lucro: %.2f\n");
+    printf("Totais: %d  | Lucro: %.2f\n");
+    printf(listColor "=== Lotes Disperdicados ===\n" resetColor);
+    printf("Coxinha: %d  | Custo: %.2f\n");
+    printf("Peixe: %d  | Custo: %.2f\n");
+    printf("Almondega: %d  | Custo: %.2f\n");
+    printf("Totais: %d  | Custo: %.2f\n");
+    printf(listColor "=== Máquinas ===\n" resetColor);
+}
+
 #pragma endregion
 
 #pragma region "Funnções de Criação de Arquivos" //Criação de arquivos
@@ -426,21 +442,6 @@ void createSimulationFile(int numberMaxMachines){
 
 #pragma region "Funções de Simulação" //Simulação
 
-void informationPanel(){
-    printf(contrastColor "===================Info==================\n" resetColor);
-    printf(listColor "=== Lotes Empacotados ===\n" resetColor);
-    printf("Coxinha: %d  | Lucro: %.2f\n");
-    printf("Peixe: %d  | Lucro: %.2f\n");
-    printf("Almondega: %d  | Lucro: %.2f\n");
-    printf("Totais: %d  | Lucro: %.2f\n");
-    printf(listColor "=== Lotes Disperdicados ===\n" resetColor);
-    printf("Coxinha: %d  | Custo: %.2f\n");
-    printf("Peixe: %d  | Custo: %.2f\n");
-    printf("Almondega: %d  | Custo: %.2f\n");
-    printf("Totais: %d  | Custo: %.2f\n");
-    printf(listColor "=== Máquinas ===\n" resetColor);
-}
-
 void addToLine(TProduct *product, TMachineOnProduction **machineOnProduction,int entryTime){
     TMachineOnProduction *selectedMachine = NULL,*aux = *machineOnProduction;
     TLine *line = NULL,*lineAux = NULL;
@@ -475,6 +476,7 @@ void addToLine(TProduct *product, TMachineOnProduction **machineOnProduction,int
     }
 }
 
+
 void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
     printf(listColor"Iniciando simulação...\n"resetColor);
     int machinesTotalCost = 0;
@@ -491,7 +493,7 @@ void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
         else
             break;
     }
-    printf(errorColor "Custo total das máquinas:" resetColor "%d\n",machinesTotalCost);
+    printf(errorColor "Custo total das máquinas: " resetColor "%d\n",machinesTotalCost);
     
 }
 #pragma endregion
