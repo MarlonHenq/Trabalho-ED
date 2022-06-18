@@ -204,6 +204,31 @@ TMachineOnProduction *alocateMachineOnProductionMemorie(int id, char model[30], 
     return newMachineOnProduction;
 }
 
+char randomProduct(){
+    int random = rand() % 10;
+    //printf("%d\n", random);
+    switch(random){
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            return "C"; //Coxinha
+        break;
+
+        case 5:
+        case 6:
+        case 7:
+            return "P"; //Peixe
+        break;
+
+        case 8:
+        case 9:
+            return "A"; //Almondega
+        break;
+    }
+}
+
 #pragma endregion
 
 #pragma region "Funções de Leitura e Print"
@@ -525,31 +550,6 @@ void addToLine(TProduct *product, TMachineOnProduction **machineOnProduction,int
     }
 }
 
-char randomProduct(){
-    int random = rand() % 10;
-    //printf("%d\n", random);
-    switch(random){
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-            return "C"; //Coxinha
-        break;
-
-        case 5:
-        case 6:
-        case 7:
-            return "P"; //Peixe
-        break;
-
-        case 8:
-        case 9:
-            return "A"; //Almondega
-        break;
-    }
-}
-
 simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProductionm, int machinesTotalCost){
     char newProduct = NULL;
     int totalCust = machinesTotalCost;
@@ -563,24 +563,25 @@ simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProduction
             progressPrint(totalTime, totalGain, totalCust);
             return;
         }
-
         //2. Se o Ganho passar a superar o custo total (Ou seja, passar a ter lucro)
         if (totalGain >= totalCust){
             progressPrint(totalTime, totalGain, totalCust);
             return;
         }
 
+        //FUNCIONAMETO SEGUNDO POR SEGUNDO:
         if (totalTime % 2 == 0){ //GERA UM NOVO PRODUTO PARA SER ADICIONADO A LINHA a cada 2 segundos
             newProduct = randomProduct();
             //ADD NA LISTA
         }
 
+
+        //PRINT:
         if(totalTime % 500000 == 0){ //Atualiza a tela a cada 500000 segundos
             progressPrint(totalTime, totalGain, totalCust);
         }
-
-        //printf("Cu = %d\n", totalTime);
         
+        //ATUALIZAÇÃO DE VARIÁVEIS:
         totalTime = totalTime + 1;
     }
 }
