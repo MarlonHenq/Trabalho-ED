@@ -20,10 +20,12 @@ const productionTimeVariation = 10; // 10%
 const KWHCust = 1; // 1 real o Kilo Watt Hora
 
 const hourInSeconds = 3600; //Total de segundos que tem em uma hora
+const twoYearsInSeconds = 63072000; //Total de segundos que tem em 2 anos
 
 const char machinesFileName[20] = "Maquinas.csv"; //Arquivos para carregamento de dados
 const char productsFileName[20] = "Produtos.csv";
 const char simulationFileName[20] = "Simulacao.csv";
+
 
 #pragma endregion
 
@@ -390,6 +392,53 @@ void informationPanel(){
     printf(listColor "=== Máquinas ===\n" resetColor);
 }
 
+void progressBarPrinter(int percent){
+    int totalBars = 50;
+    int filledBars = percent/2;
+    int emptyBars = totalBars - filledBars;
+
+    printf("[");
+    for (int i = 0; i < filledBars; i++){
+        printf("=");
+    }
+    for (int i = 0; i < emptyBars; i++){
+        printf(" ");
+    }
+    printf("] %d%%\n", percent);
+}
+
+void tuxPrinter(int number){
+    printf(" _____\n");
+    printf("< "contrastColor"%d%%"resetColor" >\n", number);
+    printf(" -----\n");
+    printf("   \\ \n");
+    printf("    \\ \n");
+    printf("        .--.\n");
+    printf("       |o_o |\n");
+    printf("       |:_/ |\n");
+    printf("      //   \\\n");
+    printf("     (|     |)\n");
+    printf("    /'\\_   _/`\\\n");
+    printf("    \\___)=(___/\n");
+    printf("\n");
+}
+
+void progressPrint(int totalTime, int totalGain, int totalCost){
+    int percentTime = (totalTime/(twoYearsInSeconds/10)*10); //Gambirra já que o número é maior que o suportando em um int normal
+    int percentMoney = (totalGain/totalCost*100);
+    
+    system("@cls||clear"); //Limpa Tela
+
+    printf(contrastColor "Nº Simulações: " resetColor "%d\n", totalTime);
+    tuxPrinter(percentTime);
+
+    printf(contrastColor"Tempo:\n"resetColor);
+    progressBarPrinter(percentTime);
+    printf(contrastColor"Dinheiro:\n"resetColor);
+    progressBarPrinter(percentMoney);
+    printf("\n");
+}
+
 #pragma endregion
 
 #pragma region "Funnções de Criação de Arquivos" //Criação de arquivos
@@ -476,25 +525,104 @@ void addToLine(TProduct *product, TMachineOnProduction **machineOnProduction,int
     }
 }
 
+char randomProduct(){
+    int random = rand() % 10;
+    //printf("%d\n", random);
+    switch(random){
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            return "C"; //Coxinha
+        break;
+
+        case 5:
+        case 6:
+        case 7:
+            return "P"; //Peixe
+        break;
+
+        case 8:
+        case 9:
+            return "A"; //Almondega
+        break;
+    }
+}
+
+simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProductionm, int machinesTotalCost){
+    char newProduct = NULL;
+    int totalCust = machinesTotalCost;
+    int totalGain = 0;
+    int totalTime = 0;
+
+    while(true){
+        //CONDIÇÔES DE PARADA:
+        //1. Se o tempo de simulação for maior 2 anos
+        if (totalTime >= twoYearsInSeconds){
+            progressPrint(totalTime, totalGain, totalCust);
+            return;
+        }
+
+        //2. Se o Ganho passar a superar o custo total (Ou seja, passar a ter lucro)
+        if (totalGain >= totalCust){
+            progressPrint(totalTime, totalGain, totalCust);
+            return;
+        }
+
+        if (totalTime % 2 == 0){ //GERA UM NOVO PRODUTO PARA SER ADICIONADO A LINHA a cada 2 segundos
+            newProduct = randomProduct();
+            //ADD NA LISTA
+        }
+
+        if(totalTime % 500000 == 0){
+            progressPrint(totalTime, totalGain, totalCust);
+        }
+
+        //printf("Cu = %d\n", totalTime);
+        
+        totalTime = totalTime + 1;
+    }
+}
+
 
 void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
-    printf(listColor"Iniciando simulação...\n"resetColor);
+    printf(contrastColor"Preparando simulação...\n"resetColor);
     int machinesTotalCost = 0;
     TMachineOnProduction *machineOnProduction = loadMachinesOnProduction(headMachine,&machinesTotalCost);
     if (machineOnProduction == NULL) return;
 
     //print machines on production
-    printf(listColor "Máquinas em produção:\n" resetColor);
+    printf(contrastColor "Máquinas em produção:\n" resetColor);
     TMachineOnProduction *aux = machineOnProduction;
     while (aux != NULL){
-        printf("%d %s\n", aux->id,aux->model);
+        printf(listColor "%d " resetColor "- %s\n", aux->id,aux->model);
         if (aux->next != NULL)
             aux = aux->next;
         else
             break;
     }
-    printf(errorColor "Custo total das máquinas: " resetColor "%d\n",machinesTotalCost);
-    
+    printf(contrastColor "Custo total das máquinas: " resetColor "%d\n",machinesTotalCost);
+    printf("\n");
+    printf("Deseja iniciar a simulação? ("contrastColor"1"resetColor" - Sim, "contrastColor"0"resetColor" - Não): ");
+
+    int userOp = NULL;
+    scanf("%d", &userOp);
+    if (userOp == 0){
+        system("@cls||clear"); //Limpa Tela
+        return;
+    }
+
+    printf(listColor "Iniciando simulação...\n" resetColor);
+    simulationLoop(headProduct, machineOnProduction, machinesTotalCost);
+
+    userOp = NULL;
+    printf("Deseja salvar a simulação? ("contrastColor"1"resetColor" - Sim, "contrastColor"0"resetColor" - Não): ");
+    scanf("%d", &userOp);
+    if (userOp == 0){
+        system("@cls||clear"); //Limpa Tela
+        return;
+    }
 }
 #pragma endregion
 
