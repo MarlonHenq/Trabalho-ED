@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-//Provável adição de um randon math
+#include <string.h>  
 
 #pragma region "Cores"
 //Cores especiais
@@ -204,7 +204,7 @@ TMachineOnProduction *alocateMachineOnProductionMemorie(int id, char model[30], 
     return newMachineOnProduction;
 }
 
-char randomProduct(){
+int randomProduct(){
     int random = rand() % 10;
     //printf("%d\n", random);
     switch(random){
@@ -213,18 +213,18 @@ char randomProduct(){
         case 2:
         case 3:
         case 4:
-            return "C"; //Coxinha
+            return 1; //Coxinha
         break;
 
         case 5:
         case 6:
         case 7:
-            return "P"; //Peixe
+            return 2; //Peixe
         break;
 
         case 8:
         case 9:
-            return "A"; //Almondega
+            return 3; //Almondega
         break;
     }
 }
@@ -432,7 +432,7 @@ void progressBarPrinter(int percent){
     printf("] %d%% ", percent);
 }
 
-void tuxPrinter(int number){
+void tuxPrinter(int number){ //Tux bolado, tá?
     printf(" _____\n");
     printf("< "contrastColor"%d%%"resetColor" >\n", number);
     printf(" -----\n");
@@ -448,9 +448,9 @@ void tuxPrinter(int number){
     printf("\n");
 }
 
-void progressPrint(int totalTime, int totalGain, int totalCost){
+void progressPrint(int totalTime, float totalGain, float totalCost){
     int percentTime = (totalTime/(twoYearsInSeconds/10)*10); //Gambirra já que o número é maior que o suportando em um int normal
-    int percentMoney = (totalGain/totalCost*100);
+    int percentMoney = (int)(totalGain/totalCost*100);
     
     system("@cls||clear"); //Limpa Tela
 
@@ -463,11 +463,11 @@ void progressPrint(int totalTime, int totalGain, int totalCost){
     printf("%d\n", twoYearsInSeconds);
 
     printf(contrastColor"Dinheiro:\n"resetColor);
-    printf("%d ", totalGain);
+    printf("%.2f ", totalGain);
     progressBarPrinter(percentMoney);
-    printf("%d", totalCost);
+    printf("%.2f", totalCost);
 
-    printf("\n");
+    printf("\n\n");
 }
 
 #pragma endregion
@@ -556,22 +556,21 @@ void addToLine(TProduct *product, TMachineOnProduction **machineOnProduction,int
     }
 }
 
-float getCostByProduct(THeadProduct *products, char type){
+float getCostByProduct(THeadProduct *products, int id){
     TProduct *aux = products->first;
     while(aux!=NULL){
-        if(aux->productionType == type){
+        if(aux->id == id){
             return aux->productionCost;
         }
         aux = aux->next;
     }
     return 0;
-    
 }
 
-simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProductionm, int machinesTotalCost){
-    char newProduct = NULL;
-    int totalCost = machinesTotalCost;
-    int totalGain = 0;
+simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProductionm, float machinesTotalCost){
+    int newProduct = NULL;
+    float totalCost = machinesTotalCost;
+    float totalGain = 0;
     int totalTime = 0;
 
     while(true){
@@ -637,7 +636,7 @@ void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
     }
 
     printf(listColor "Iniciando simulação...\n" resetColor);
-    simulationLoop(headProduct, machineOnProduction, machinesTotalCost);
+    simulationLoop(headProduct, machineOnProduction, (float)machinesTotalCost);
 
     userOp = NULL;//Valor aleatório para iniciar o loop (Já que a linguagem etende NULL como 0)
     while (true){
