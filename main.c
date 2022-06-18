@@ -78,9 +78,9 @@ typedef struct machineOnProduction{
     int productionTime[3]; //Tempo de produção quem pode variar +/- 10% (Constante productionTimeVariation)
     int consumption; //Consumo em KWH
     int price; //Preço em reais da compra da maquina
-    struct machine *next; //Ponteiro para o próximo produto
+    struct machineOnProduction *next; //Ponteiro para o próximo produto
     TLine *first; //Ponteiro para o primeiro produto da linha
-    int numerOfProducts; //Quantidade de produtos na linha
+    int numberOfProducts; //Quantidade de produtos na linha
     int timeOfProduction; //Tempo de produção do produto em destaque
 }TMachineOnProduction;
 
@@ -196,7 +196,7 @@ TMachineOnProduction *alocateMachineOnProductionMemorie(int id, char model[30], 
     newMachineOnProduction->price = price;
     newMachineOnProduction->next = NULL;
     newMachineOnProduction->first = NULL;
-    newMachineOnProduction->numerOfProducts = 0;
+    newMachineOnProduction->numberOfProducts = 0;
     newMachineOnProduction->timeOfProduction = 0;
 
     return newMachineOnProduction;
@@ -439,6 +439,40 @@ void informationPanel(){
     printf("Almondega: %d  | Custo: %.2f\n");
     printf("Totais: %d  | Custo: %.2f\n");
     printf(listColor "=== Máquinas ===\n" resetColor);
+}
+
+void addToLine(TProduct *product, TMachineOnProduction **machineOnProduction,int entryTime){
+    TMachineOnProduction *selectedMachine = NULL,*aux = *machineOnProduction;
+    TLine *line = NULL,*lineAux = NULL;
+    while(aux!=NULL){
+        if((*machineOnProduction)->productionType[0] == 'T' || (*machineOnProduction)->productionType[0] == product->productionType[0]){
+            if(!selectedMachine){
+                selectedMachine = *machineOnProduction;
+            }else{
+                if((*machineOnProduction)->numberOfProducts < selectedMachine->numberOfProducts){
+                    selectedMachine = *machineOnProduction;
+                }
+            }
+        }
+        aux = aux->next;
+    }
+    if(!selectedMachine){
+        printf(errorColor "Não há máquinas disponíveis para processar esse tipo de produto!" resetColor);
+    }else{
+        line = (TLine *) malloc(sizeof(TLine));
+        line->type = product->productionType[0];
+        line->entryTime = entryTime;
+        line->next = NULL;
+        if(selectedMachine->first == NULL){
+            selectedMachine->first = line;
+        }else{
+            lineAux = selectedMachine->first;
+            while(lineAux->next != NULL){
+                lineAux = lineAux->next;
+            }
+            lineAux->next = line;
+        }
+    }
 }
 
 void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
