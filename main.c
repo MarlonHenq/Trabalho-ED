@@ -575,7 +575,7 @@ simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProduction
             //ADD NA LISTA
         }
 
-        if(totalTime % 500000 == 0){
+        if(totalTime % 500000 == 0){ //Atualiza a tela a cada 500000 segundos
             progressPrint(totalTime, totalGain, totalCust);
         }
 
@@ -616,12 +616,41 @@ void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
     printf(listColor "Iniciando simulação...\n" resetColor);
     simulationLoop(headProduct, machineOnProduction, machinesTotalCost);
 
-    userOp = NULL;
-    printf("Deseja salvar a simulação? ("contrastColor"1"resetColor" - Sim, "contrastColor"0"resetColor" - Não): ");
-    scanf("%d", &userOp);
-    if (userOp == 0){
-        system("@cls||clear"); //Limpa Tela
-        return;
+    userOp = NULL;//Valor aleatório para iniciar o loop (Já que a linguagem etende NULL como 0)
+    while (true){
+        printf(contrastColor"===================MENU SIMULAÇÃO===================\n" resetColor);
+        printf(contrastColor "1" resetColor " - Mostrar dados da simulação\n");
+        printf(contrastColor "2" resetColor " - Exportar dados para arquivo\n");
+        printf(contrastColor "3" resetColor " - Mostrar e exportar dados\n");
+        printf(contrastColor "0" resetColor " - Voltar\n");
+        printf("\n");
+        printf("Escolha uma opção: ");
+
+        scanf("%d", &userOp);
+        getchar();
+        
+        switch (userOp){
+            case 1:
+                system("@cls||clear"); //Limpa Tela
+                //printSimulationData(machineOnProduction);
+                break;
+            case 2:
+                system("@cls||clear"); //Limpa Tela
+                //exportSimulationData(machineOnProduction);
+                break;
+            case 3:
+                system("@cls||clear"); //Limpa Tela
+                // printSimulationData(machineOnProduction);
+                // exportSimulationData(machineOnProduction);
+                break;
+            case 0:
+                system("@cls||clear"); //Limpa Tela
+                return;
+                break;
+            default:
+                printf(errorColor "Opção inválida!\n" resetColor);
+                break;
+        }
     }
 }
 #pragma endregion
@@ -632,13 +661,13 @@ int main(){
 
     int userOp = NULL;
 
-    while (userOp!=5){
+    while (true){
         printf(contrastColor"=======================MENU PRINCIPAL=======================\n" resetColor);
         printf(contrastColor "1" resetColor " - Carregar Maquinas e Produtos disponíveis\n");
         printf(contrastColor "2" resetColor " - Imprimir Maquinas e Produtos disponíveis\n");
         printf(contrastColor "3" resetColor " - Gerar um arquivo de uma nova simulação (%s)\n", simulationFileName);
         printf(contrastColor "4" resetColor " - Carregar e rodar uma nova simulação (%s))\n", simulationFileName);
-        printf(contrastColor "5" resetColor " - Sair\n");
+        printf(contrastColor "0" resetColor " - Sair\n");
         printf("\n");
         printf("Escolha uma opção: ");
         scanf("%d", &userOp);
@@ -711,7 +740,7 @@ int main(){
                 }
             break;
 
-            case 5:
+            case 0:
                 system("@cls||clear"); //Limpa Tela
                 printf(contrastColor "Bye!\n" resetColor);
                 exit(1);
