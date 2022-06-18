@@ -378,7 +378,7 @@ TMachineOnProduction *loadMachinesOnProduction( THeadMachine *headMachine,int *m
 
 #pragma region "Funnções de Criação de Arquivos" //Criação de arquivos
 
-void createSimulationFile(){
+void createSimulationFile(int numberMaxMachines){
     FILE *file = fopen(simulationFileName, "w"); //Abertura do arquivo
     if (file == NULL){ //Verificação de erro de abertura do arquivo
         printf(errorColor"Erro ao abrir o arquivo de simulação!\n"resetColor);
@@ -392,6 +392,16 @@ void createSimulationFile(){
     while (1==1){
         printf("Digite o ID da máquina que deseja adicionar (Para parar de adicionar digite '0'): ");
         scanf("%d", &machineID);
+
+        if (machineID > numberMaxMachines){ //Para caso um id indisponivel seja digitado
+            system("@cls||clear"); //Limpa Tela
+            printf(errorColor"O ID de maquina indisponível! Digite um ID válido\n"resetColor);
+            FILE *file = fopen(simulationFileName, "w");
+            fclose(file);
+
+            return;
+        }
+
         if (machineID != 0){
             if(lnNum>0){//Impede erro de repetição por ultima linha em branco
                 fprintf(file,"\n");
@@ -407,7 +417,8 @@ void createSimulationFile(){
         fprintf(file, "%d", numberOfMachines);
         lnNum=1;
     }
-
+    system("@cls||clear"); //Limpa Tela
+    printf("Arquivo de simulação criado com sucesso!\n");
     fclose(file); //Fechando o arquivo
 }
 
@@ -510,7 +521,15 @@ int main(){
             
             case 3:
                 system("@cls||clear"); //Limpa Tela
-                createSimulationFile();
+
+                if(listProducts->first != NULL || listMachines->first != NULL){
+                    createSimulationFile(listMachines->idCount);
+                }
+                else{
+                    printf(errorColor"Não há Produtos ou Maquinas carregadas\n"resetColor);
+                }
+
+                
             break;
 
             case 4:
