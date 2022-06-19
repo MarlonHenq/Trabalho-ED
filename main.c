@@ -454,7 +454,7 @@ void progressPrint(int totalTime, float totalGain, float totalCost){
     
     system("@cls||clear"); //Limpa Tela
 
-    printf(contrastColor "Nº Simulações: " resetColor "%d\n", totalTime);
+    printf(contrastColor "Nº Loops: " resetColor "%d\n", totalTime);
     tuxPrinter(percentTime);
 
     printf(contrastColor"Tempo:\n"resetColor);
@@ -567,11 +567,13 @@ float getCostByProduct(THeadProduct *products, int id){
     return 0;
 }
 
-simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProductionm, float machinesTotalCost){
+simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProductionm, double machinesTotalCost){
     int newProduct = NULL;
-    float totalCost = machinesTotalCost;
-    float totalGain = 0;
+    double totalCost = machinesTotalCost;
+    double totalGain = 0;
     int totalTime = 0;
+
+    int test = 0;
 
     while(true){
         //CONDIÇÔES DE PARADA:
@@ -591,15 +593,20 @@ simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProduction
             newProduct = randomProduct();
 
             //ADD PREÇO de custo
-            totalCost += getCostByProduct(products, newProduct);
+            totalCost = totalCost + getCostByProduct(products, newProduct);
 
             //ADD NA LISTA
+        }
+
+        if(totalTime % hourInSeconds){//Contagem KWH das maquinas
+
         }
 
 
         //PRINT:
         if(totalTime % 500000 == 0){ //Atualiza a tela a cada 500000 segundos
             progressPrint(totalTime, totalGain, totalCost);
+            //scanf("%d", &test);
         }
         
         //ATUALIZAÇÃO DE VARIÁVEIS:
