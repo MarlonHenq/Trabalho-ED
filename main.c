@@ -755,6 +755,18 @@ void updateTimeOfProductionOfMachines(TMachineOnProduction **machineOnProduction
     }
 }
 
+void updateDeteriorationTimeOfProducts(TMachineOnProduction **machineOnProduction){
+    TMachineOnProduction *aux = *machineOnProduction;
+    while(aux!=NULL){
+        TLine *aux2 = aux->first;
+        while(aux2!=NULL){
+            aux2->entryTime = aux2->entryTime - 1;
+            aux2 = aux2->next;
+        }
+        aux = aux->next;
+    }
+}
+
 TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProductionm, double machinesTotalCost){
     TPackaging *packaging = alocatePackaging(0,0,0,0,0,0);
     int newProduct = NULL;
@@ -812,10 +824,12 @@ TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineO
 
         //3. Atualizar o tempo de processamento de cada máquina
             updateTimeOfProductionOfMachines(&machineOnProductionm);
+
         //4. Atualizar o tempo de deterioração de cada produto
+            updateDeteriorationTimeOfProducts(&machineOnProductionm);
 
         //5. Calcular Ganhos
-
+            
 
         //PRINT:
         if(totalTime % 500000 == 0){ //Atualiza a tela a cada 500000 segundos de simulação
