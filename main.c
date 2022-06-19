@@ -448,7 +448,7 @@ void tuxPrinter(int number){ //Tux bolado, tá?
     printf("\n");
 }
 
-void progressPrint(int totalTime, float totalGain, float totalCost){
+void progressPrint(int totalTime, double totalGain, double totalCost){
     int percentTime = (totalTime/(twoYearsInSeconds/10)*10); //Gambirra já que o número é maior que o suportando em um int normal
     int percentMoney = (int)(totalGain/totalCost*100);
     
