@@ -93,6 +93,9 @@ typedef struct packaging{
     int cWasted;            //Disperdiçados de Coxinha  
     int pWasted;            //Disperdiçados de Peixe    
     int aWasted;            //Disperdiçados de Almôndega
+    int cProduction;        //Produção de Coxinha
+    int pProduction;        //Produção de Peixe
+    int aProduction;        //Produção de Almôndega
 
     int finalTime;         //Tempo de Fim da Simulação
     int totalCost;         //Custo Total da Simulação
@@ -121,6 +124,9 @@ TPackaging *alocatePackaging(int cBatches, int pBatches, int aBatches, int cWast
     package->cWasted = cWasted;
     package->pWasted = pWasted;
     package->aWasted = aWasted;
+    package->cProduction = 0;
+    package->pProduction = 0;
+    package->aProduction = 0;
 
     package->finalTime = 0;
     package->totalCost = 0;
@@ -608,6 +614,16 @@ void addProductToMachineByID(TMachineOnProduction **machineOnProduction, THeadPr
         if(aux->id == id){
             aux->numberOfProducts = aux->numberOfProducts + 1;
             TLine *aux2 = aux->first; 
+
+            if(aux->first == NULL){
+                aux->timeOfProduction = getDeteriorationTimeByProductID(products, newProduct);
+
+                aux2 = (TLine*)malloc(sizeof(TLine));
+                aux2->type = newProduct;
+                aux2->entryTime = getDeteriorationTimeByProductID(products, newProduct);
+                aux2->next = NULL;
+            }
+            
             while(aux2!=NULL){
                 if(aux2->next == NULL){
                     aux2->next = (TLine*)malloc(sizeof(TLine));
@@ -672,8 +688,9 @@ TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineO
             }
         }
         //2. Remover um produto da linha
-        
-
+            //2.1. Para as maquinas que terminaram o seu tempo de processamento
+            
+            //2.2. Para os produtos que pereceram na linha (Separados por tipos já que deve-se somar na estatistica)
 
 
 
@@ -728,7 +745,7 @@ void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
 
     printf(listColor "Iniciando simulação...\n" resetColor);
     TPackaging *results = alocatePackaging(0,0,0,0,0,0);
-    TPackaging results = simulationLoop(headProduct, machineOnProduction, (float)machinesTotalCost);
+    *results = simulationLoop(headProduct, machineOnProduction, (float)machinesTotalCost);
 
     userOp = NULL;//Valor aleatório para iniciar o loop (Já que a linguagem etende NULL como 0)
     while (true){
