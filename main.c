@@ -668,7 +668,7 @@ void machineTerminateProduction(TMachineOnProduction **machineOnProduction, TPac
             //Retira o produto terminado da lista de produção
             TLine *aux2 = aux->first;
             int productID = aux2->type;
-
+            
             aux->first = aux->first->next;
             free(aux2);
             aux->numberOfProducts = aux->numberOfProducts - 1;
@@ -688,10 +688,9 @@ void machineTerminateProduction(TMachineOnProduction **machineOnProduction, TPac
                 break;
             }
 
-
             //Adiciona o segundo produto
             if (aux->first != NULL){
-                aux->timeOfProduction = getDeteriorationTimeByProductID(products, aux->first->type);
+                aux->timeOfProduction = getTimeOfProductionProductOnMachine(*machineOnProduction, aux->id, aux->first->type);
             }
         }
         aux = aux->next;
@@ -781,7 +780,7 @@ TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineO
         //1. Se o tempo de simulação for maior 2 anos
         if (totalTime >= twoYearsInSeconds){
             progressPrint(totalTime, totalGain, totalCost);
-            return;
+            return; 
         }
         //2. Se o Ganho passar a superar o custo total (Ou seja, passar a ter lucro)
         if (totalGain >= totalCost){
@@ -820,14 +819,14 @@ TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineO
             machineTerminateProduction(&machineOnProductionm, &packaging, products);
 
             //2.2. Para os produtos que pereceram na linha
-            removeExpiredProducts(&machineOnProductionm, products, &packaging);
+            //removeExpiredProducts(&machineOnProductionm, products, &packaging);
 
         //3. Atualizar o tempo
             //3.1. Atualizar o tempo de processamento de todas as maquinas
-            updateTimeOfProductionOfMachines(&machineOnProductionm);
+            //updateTimeOfProductionOfMachines(&machineOnProductionm);
 
             //3.2. Atualizar o tempo de deterioração de todos os produtos
-            updateDeteriorationTimeOfProducts(&machineOnProductionm);
+            //updateDeteriorationTimeOfProducts(&machineOnProductionm);
 
         //4. Calcular Ganhos
             totalGain = (packaging->cProduction*getGainByProduct(products, 1));
