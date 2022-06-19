@@ -654,12 +654,27 @@ TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineO
             //ADD PREÇO de custo
             totalCost = totalCost + getCostByProduct(products, newProduct);
 
+            //ADD LOTE NA ESTETISTICA
+            if(newProduct == 1){
+                packaging->cBatches++;
+            }
+            else if(newProduct == 2){
+                packaging->pBatches++;
+            }
+            else if(newProduct == 3){
+                packaging->aBatches++;
+            }
+
             //ADD NA LISTA
             int machineID = getMachinesThatAcceptTypeOfProductANDHaveShortestList(machineOnProductionm, newProduct);
             if(machineID != 0){
                 addProductToMachineByID(&machineOnProductionm, products, machineID, newProduct);
             }
         }
+        //2. Remover um produto da linha
+        
+
+
 
 
         //PRINT:
@@ -669,8 +684,16 @@ TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineO
         }
         
         //ATUALIZAÇÃO DE VARIÁVEIS:
+        //1. Atualiza o tempo de simulação
         totalTime = totalTime + 1;
+
+        //2. Atualizar o estado das máquinas e deteorização de produtos
+
     }
+
+    packaging->finalTime = totalTime;
+    packaging->totalGain = totalGain;
+    packaging->totalCost = totalCost;
 
     return *packaging;
 }
