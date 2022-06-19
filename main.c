@@ -68,7 +68,7 @@ typedef struct simulation{
 
 typedef struct line{
     //struct batch *product;
-    char type;          //Tipo de Produto
+    int type;          //Tipo de Produto
     int entryTime;      //Tempo de Entrada
     struct line *next;  //Próximo da Fila
 }TLine;
@@ -86,6 +86,18 @@ typedef struct machineOnProduction{
     int timeOfProduction; //Tempo de produção do produto em destaque
 }TMachineOnProduction;
 
+typedef struct packaging{
+    int cBatches;           //Quantidade de Lotes de Coxinha  
+    int pBatches;           //Quantidade de Lotes de Peixe    
+    int aBatches;           //Quantidade de Lotes de Almôndega
+    int cWasted;            //Disperdiçados de Coxinha  
+    int pWasted;            //Disperdiçados de Peixe    
+    int aWasted;            //Disperdiçados de Almôndega
+
+    int finalTime;         //Tempo de Fim da Simulação
+    int totalCost;         //Custo Total da Simulação
+    int totalGain;         //Lucro Total da Simulação
+}TPackaging;
 
 #pragma endregion
 
@@ -94,6 +106,29 @@ void creditsMenu();
 #pragma endregion
 
 #pragma region "Funções Internas" //Alocação de memória | veficações | calculos internos
+
+TPackaging *alocatePackaging(int cBatches, int pBatches, int aBatches, int cWasted, int pWasted, int aWasted){
+    TPackaging *package = (TPackaging *)malloc(sizeof(TPackaging));
+
+    if(package == NULL){
+        printf(errorColor"Erro ao alocar memória para o Packaging!\n"resetColor);
+        return NULL;
+    }
+
+    package->cBatches = cBatches;
+    package->pBatches = pBatches;
+    package->aBatches = aBatches;
+    package->cWasted = cWasted;
+    package->pWasted = pWasted;
+    package->aWasted = aWasted;
+
+    package->finalTime = 0;
+    package->totalCost = 0;
+    package->totalGain = 0;
+    return package;
+}
+
+
 TProduct *alocateProductMemorie(int id, char productionType[2], float productionCost, float salePrice, int deteriorationTime, int productionProbability){
     TProduct *newProduct = (TProduct *)malloc(sizeof(TProduct)); //Alocação de memória para o novo produto
 
@@ -522,39 +557,6 @@ void createSimulationFile(int numberMaxMachines){
 
 #pragma region "Funções de Simulação" //Simulação
 
-void addToLine(TProduct *product, TMachineOnProduction **machineOnProduction,int entryTime){
-    TMachineOnProduction *selectedMachine = NULL,*aux = *machineOnProduction;
-    TLine *line = NULL,*lineAux = NULL;
-    while(aux!=NULL){
-        if((*machineOnProduction)->productionType[0] == 'T' || (*machineOnProduction)->productionType[0] == product->productionType[0]){
-            if(!selectedMachine){
-                selectedMachine = *machineOnProduction;
-            }else{
-                if((*machineOnProduction)->numberOfProducts < selectedMachine->numberOfProducts){
-                    selectedMachine = *machineOnProduction;
-                }
-            }
-        }
-        aux = aux->next;
-    }
-    if(!selectedMachine){
-        printf(errorColor "Não há máquinas disponíveis para processar esse tipo de produto!" resetColor);
-    }else{
-        line = (TLine *) malloc(sizeof(TLine));
-        line->type = product->productionType[0];
-        line->entryTime = entryTime;
-        line->next = NULL;
-        if(selectedMachine->first == NULL){
-            selectedMachine->first = line;
-        }else{
-            lineAux = selectedMachine->first;
-            while(lineAux->next != NULL){
-                lineAux = lineAux->next;
-            }
-            lineAux->next = line;
-        }
-    }
-}
 
 float getCostByProduct(THeadProduct *products, int id){
     TProduct *aux = products->first;
@@ -567,7 +569,62 @@ float getCostByProduct(THeadProduct *products, int id){
     return 0;
 }
 
-simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProductionm, double machinesTotalCost){
+int getMachinesThatAcceptTypeOfProductANDHaveShortestList(TMachineOnProduction *machineOnProduction, int typeOfProduct){
+    TMachineOnProduction *aux = machineOnProduction;
+    int shortestListID = 0;
+    int shortestListSize = 0;
+
+    while(aux!=NULL){
+        if(aux->productionType == "T" || (aux->productionType == "C" && typeOfProduct == 1) || (aux->productionType == "P" && typeOfProduct == 2) || (aux->productionType == "A" && typeOfProduct == 3)){
+            if(aux->numberOfProducts < shortestListSize){
+                shortestListSize = aux->numberOfProducts;
+                shortestListID = aux->id;
+            }
+        }
+        aux = aux->next;
+    }
+
+    return shortestListID; //Return 0 caso não encontre nenhuma máquina que aceite o tipo de produto
+}
+
+int getDeteriorationTimeByProductID(THeadProduct *products, int id){
+    TProduct *aux = products->first;
+    while(aux!=NULL){
+        if(aux->id == id){
+            return aux->deteriorationTime;
+        }
+        aux = aux->next;
+    }
+    return 0;
+}
+
+void addProductToMachineByID(TMachineOnProduction **machineOnProduction, THeadProduct *products, int id, int newProduct){
+    if (id == 0){
+        return;
+    }
+
+    TMachineOnProduction *aux = *machineOnProduction;
+    while(aux!=NULL){
+        if(aux->id == id){
+            aux->numberOfProducts = aux->numberOfProducts + 1;
+            TLine *aux2 = aux->first; 
+            while(aux2!=NULL){
+                if(aux2->next == NULL){
+                    aux2->next = (TLine*)malloc(sizeof(TLine));
+                    aux2->next->type = newProduct;
+                    aux2->next->entryTime = getDeteriorationTimeByProductID(products, newProduct);
+                    aux2->next->next = NULL;
+                }
+                aux2 = aux2->next;
+            }
+            return;
+        }
+        aux = aux->next;
+    }
+}
+
+TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProductionm, double machinesTotalCost){
+    TPackaging *packaging = alocatePackaging(0,0,0,0,0,0);
     int newProduct = NULL;
     double totalCost = machinesTotalCost;
     double totalGain = 0;
@@ -588,7 +645,9 @@ simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProduction
             return;
         }
 
+
         //FUNCIONAMETO SEGUNDO POR SEGUNDO:
+        //1. Adicionar um novo produto ao sistema
         if (totalTime % 2 == 0){ //GERA UM NOVO PRODUTO PARA SER ADICIONADO A LINHA a cada 2 segundos
             newProduct = randomProduct();
 
@@ -596,15 +655,15 @@ simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProduction
             totalCost = totalCost + getCostByProduct(products, newProduct);
 
             //ADD NA LISTA
-        }
-
-        if(totalTime % hourInSeconds){//Contagem KWH das maquinas
-
+            int machineID = getMachinesThatAcceptTypeOfProductANDHaveShortestList(machineOnProductionm, newProduct);
+            if(machineID != 0){
+                addProductToMachineByID(&machineOnProductionm, products, machineID, newProduct);
+            }
         }
 
 
         //PRINT:
-        if(totalTime % 500000 == 0){ //Atualiza a tela a cada 500000 segundos
+        if(totalTime % 500000 == 0){ //Atualiza a tela a cada 500000 segundos de simulação
             progressPrint(totalTime, totalGain, totalCost);
             //scanf("%d", &test);
         }
@@ -612,6 +671,8 @@ simulationLoop(THeadProduct *products, TMachineOnProduction *machineOnProduction
         //ATUALIZAÇÃO DE VARIÁVEIS:
         totalTime = totalTime + 1;
     }
+
+    return *packaging;
 }
 
 
@@ -643,7 +704,8 @@ void simulation(THeadProduct *headProduct, THeadMachine *headMachine){
     }
 
     printf(listColor "Iniciando simulação...\n" resetColor);
-    simulationLoop(headProduct, machineOnProduction, (float)machinesTotalCost);
+    TPackaging *results = alocatePackaging(0,0,0,0,0,0);
+    TPackaging results = simulationLoop(headProduct, machineOnProduction, (float)machinesTotalCost);
 
     userOp = NULL;//Valor aleatório para iniciar o loop (Já que a linguagem etende NULL como 0)
     while (true){
