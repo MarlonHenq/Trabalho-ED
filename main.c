@@ -575,6 +575,28 @@ float getCostByProduct(THeadProduct *products, int id){
     return 0;
 }
 
+float getGainByProduct(THeadProduct *products, int id){
+    TProduct *aux = products->first;
+    while(aux!=NULL){
+        if(aux->id == id){
+            return aux->salePrice;
+        }
+        aux = aux->next;
+    }
+    return 0;
+}
+
+int getTimeOfProductionProductOnMachine(TMachineOnProduction *machines, int idMachine, int idProduct){
+    TMachineOnProduction *aux = machines;
+    while(aux!=NULL){
+        if(aux->id == idMachine){
+            return aux->productionTime[idProduct-1];
+        }
+        aux = aux->next;
+    }
+    return 0;
+}
+
 int getMachinesThatAcceptTypeOfProductANDHaveShortestList(TMachineOnProduction *machineOnProduction, int typeOfProduct){
     TMachineOnProduction *aux = machineOnProduction;
     int shortestListID = 0;
@@ -616,7 +638,7 @@ void addProductToMachineByID(TMachineOnProduction **machineOnProduction, THeadPr
             TLine *aux2 = aux->first; 
 
             if(aux->first == NULL){
-                aux->timeOfProduction = getDeteriorationTimeByProductID(products, newProduct);
+                aux->timeOfProduction = getTimeOfProductionProductOnMachine(*machineOnProduction, id, newProduct);
 
                 aux2 = (TLine*)malloc(sizeof(TLine));
                 aux2->type = newProduct;
@@ -635,6 +657,100 @@ void addProductToMachineByID(TMachineOnProduction **machineOnProduction, THeadPr
             }
             return;
         }
+        aux = aux->next;
+    }
+}
+
+void machineTerminateProduction(TMachineOnProduction **machineOnProduction, TPackaging **packaging, THeadProduct *products){
+    TMachineOnProduction *aux = *machineOnProduction;
+    while(aux!=NULL){
+        if(aux->timeOfProduction <= 0){
+            //Retira o produto terminado da lista de produção
+            TLine *aux2 = aux->first;
+            int productID = aux2->type;
+
+            aux->first = aux->first->next;
+            free(aux2);
+            aux->numberOfProducts = aux->numberOfProducts - 1;
+
+            //Salva o produto na estatistica
+            TPackaging *auxPac = *packaging;
+            switch (productID)
+            {
+            case 1:
+                auxPac->cProduction++;
+                break;
+            case 2:
+                auxPac->pProduction++;
+                break;
+            case 3:
+                auxPac->aProduction++;
+                break;
+            }
+
+
+            //Adiciona o segundo produto
+            if (aux->first != NULL){
+                aux->timeOfProduction = getDeteriorationTimeByProductID(products, aux->first->type);
+            }
+        }
+        aux = aux->next;
+    }
+}
+
+void removeExpiredProducts(TMachineOnProduction **machineOnProduction, THeadProduct *products, TPackaging **packaging){
+    TMachineOnProduction *aux = *machineOnProduction;
+    int productID = NULL;
+    int nextProductID = NULL;
+    while(aux!=NULL){ //Olha todas as maquinas
+        TLine *aux2 = aux->first;
+        TLine *aux3 = NULL;
+        while(aux2!=NULL){ //Olha todos os produtos de cada maquina
+            if(aux2->entryTime <= 0){
+                if(aux->first == aux2){
+                    aux->first = aux->first->next;
+                    productID = aux2->type;
+                    free(aux2);
+                    aux->numberOfProducts = aux->numberOfProducts - 1;
+                    
+                    nextProductID = aux->first->type;
+                    aux->timeOfProduction = getTimeOfProductionProductOnMachine(*machineOnProduction, aux->id, nextProductID);
+                }
+                else{
+                    aux3 = aux2;
+                    aux2 = aux2->next;
+                    productID = aux2->type;
+                    free(aux3);
+                    aux->numberOfProducts = aux->numberOfProducts - 1;
+                }
+
+                //Salva o produto na estatistica
+                TPackaging *auxPac = *packaging;
+                switch (productID)
+                {
+                case 1:
+                    auxPac->cWasted++;
+                    break;
+                case 2:
+                    auxPac->pWasted++;
+                    break;
+                case 3:
+                    auxPac->aWasted++;
+                    break;
+                }
+
+            }
+            aux2 = aux2->next;
+        }
+
+        aux = aux->next;
+    }
+}
+
+void updateTimeOfProductionOfMachines(TMachineOnProduction **machineOnProduction){
+    TMachineOnProduction *aux = *machineOnProduction;
+    while(aux!=NULL){
+        aux->timeOfProduction = aux->timeOfProduction - 1;
         aux = aux->next;
     }
 }
@@ -689,9 +805,16 @@ TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineO
         }
         //2. Remover um produto da linha
             //2.1. Para as maquinas que terminaram o seu tempo de processamento
-            
-            //2.2. Para os produtos que pereceram na linha (Separados por tipos já que deve-se somar na estatistica)
+            machineTerminateProduction(&machineOnProductionm, &packaging, products);
 
+            //2.2. Para os produtos que pereceram na linha
+            removeExpiredProducts(&machineOnProductionm, products, &packaging);
+
+        //3. Atualizar o tempo de processamento de cada máquina
+            updateTimeOfProductionOfMachines(&machineOnProductionm);
+        //4. Atualizar o tempo de deterioração de cada produto
+
+        //5. Calcular Ganhos
 
 
         //PRINT:
