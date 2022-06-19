@@ -822,14 +822,17 @@ TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineO
             //2.2. Para os produtos que pereceram na linha
             removeExpiredProducts(&machineOnProductionm, products, &packaging);
 
-        //3. Atualizar o tempo de processamento de cada máquina
+        //3. Atualizar o tempo
+            //3.1. Atualizar o tempo de processamento de todas as maquinas
             updateTimeOfProductionOfMachines(&machineOnProductionm);
 
-        //4. Atualizar o tempo de deterioração de cada produto
+            //3.2. Atualizar o tempo de deterioração de todos os produtos
             updateDeteriorationTimeOfProducts(&machineOnProductionm);
 
-        //5. Calcular Ganhos
-            
+        //4. Calcular Ganhos
+            totalGain = (packaging->cProduction*getGainByProduct(products, 1));
+            totalGain = totalGain + (packaging->pProduction*getGainByProduct(products, 2));
+            totalGain = totalGain + (packaging->aProduction*getGainByProduct(products, 3));
 
         //PRINT:
         if(totalTime % 500000 == 0){ //Atualiza a tela a cada 500000 segundos de simulação
@@ -840,8 +843,6 @@ TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineO
         //ATUALIZAÇÃO DE VARIÁVEIS:
         //1. Atualiza o tempo de simulação
         totalTime = totalTime + 1;
-
-        //2. Atualizar o estado das máquinas e deteorização de produtos
 
     }
 
