@@ -20,7 +20,7 @@ const productionTimeVariation = 10; // 10%
 const KWHCust = 1; // 1 real o Kilo Watt Hora
 
 const hourInSeconds = 3600; //Total de segundos que tem em uma hora
-const twoYearsInSeconds = 10; // 63072000 Total de segundos que tem em 2 anos
+const twoYearsInSeconds = 100; // 63072000 Total de segundos que tem em 2 anos
 
 const char machinesFileName[20] = "Maquinas.csv"; //Arquivos para carregamento de dados
 const char productsFileName[20] = "Produtos.csv";
@@ -493,7 +493,7 @@ void progressPrint(int totalTime, double totalGain, double totalCost){
     int percentTime = (totalTime/(twoYearsInSeconds/10)*10); //Gambirra já que o número é maior que o suportando em um int normal
     int percentMoney = (int)(totalGain/totalCost*100);
     
-    system("@cls||clear"); //Limpa Tela
+    //system("@cls||clear"); //Limpa Tela
 
     printf(contrastColor "Nº Loops: " resetColor "%d\n", totalTime);
     tuxPrinter(percentTime);
@@ -650,14 +650,16 @@ void addProductToMachineByID(TMachineOnProduction **machineOnProduction, THeadPr
     }
 
     TMachineOnProduction *aux = *machineOnProduction;
-    printf("CU");
     while(aux!=NULL){
         if(aux->id == id){
             aux->numberOfProducts = aux->numberOfProducts + 1;
             TLine *aux2 = aux->first; 
 
-            if(aux->first == NULL){
+            if(aux->first == NULL){//Se for o primeiro
+                
                 aux->timeOfProduction = getTimeOfProductionProductOnMachine(*machineOnProduction, id, newProduct);
+
+                printf("%d", aux->timeOfProduction); //VERIFICAR AQUI 
 
                 aux2 = (TLine*)malloc(sizeof(TLine));
                 aux2->type = newProduct;
@@ -671,8 +673,11 @@ void addProductToMachineByID(TMachineOnProduction **machineOnProduction, THeadPr
                     aux2->next->type = newProduct;
                     aux2->next->entryTime = getDeteriorationTimeByProductID(products, newProduct);
                     aux2->next->next = NULL;
+                    return;
                 }
-                aux2 = aux2->next;
+                else{
+                    aux2 = aux2->next;
+                }
             }
             return;
         }
@@ -685,32 +690,30 @@ void machineTerminateProduction(TMachineOnProduction **machineOnProduction, TPac
     while(aux!=NULL){
         if(aux->timeOfProduction <= 0){
             //Retira o produto terminado da lista de produção
-            TLine *aux2 = aux->first;
+            TLine *aux2 = aux->first;            
 
             if (aux->first == NULL){
                 return;
             }
 
             int productID = aux2->type;
-
-            printf("cu\n");
             
             aux->first = aux->first->next;
             free(aux2);
             aux->numberOfProducts = aux->numberOfProducts - 1;
             
+            
             //Salva o produto na estatistica
-            TPackaging *auxPac = *packaging;
             switch (productID)
             {
             case 1:
-                auxPac->cProduction++;
+                (*packaging)->cProduction++;
                 break;
             case 2:
-                auxPac->pProduction++;
+                (*packaging)->pProduction++;
                 break;
             case 3:
-                auxPac->aProduction++;
+                (*packaging)->aProduction++;
                 break;
             }
 
@@ -843,17 +846,17 @@ TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineO
         }
         //2. Remover um produto da linha
             //2.1. Para as maquinas que terminaram o seu tempo de processamento
-            //machineTerminateProduction(&machineOnProductionm, &packaging, products);
+            machineTerminateProduction(&machineOnProductionm, &packaging, products);
 
             //2.2. Para os produtos que pereceram na linha
-            //removeExpiredProducts(&machineOnProductionm, products, &packaging);
+            removeExpiredProducts(&machineOnProductionm, products, &packaging);
 
         //3. Atualizar o tempo
             //3.1. Atualizar o tempo de processamento de todas as maquinas
-            //updateTimeOfProductionOfMachines(&machineOnProductionm);
+            updateTimeOfProductionOfMachines(&machineOnProductionm);
 
             //3.2. Atualizar o tempo de deterioração de todos os produtos
-            //updateDeteriorationTimeOfProducts(&machineOnProductionm);
+            updateDeteriorationTimeOfProducts(&machineOnProductionm);
 
         //4. Calcular Ganhos
             totalGain = (packaging->cProduction*getGainByProduct(products, 1));
