@@ -20,7 +20,7 @@ const productionTimeVariation = 10; // 10%
 const KWHCust = 1; // 1 real o Kilo Watt Hora
 
 const hourInSeconds = 3600; //Total de segundos que tem em uma hora
-const twoYearsInSeconds = 63072000; //Total de segundos que tem em 2 anos
+const twoYearsInSeconds = 10; // 63072000 Total de segundos que tem em 2 anos
 
 const char machinesFileName[20] = "Maquinas.csv"; //Arquivos para carregamento de dados
 const char productsFileName[20] = "Produtos.csv";
@@ -601,10 +601,28 @@ int getMachinesThatAcceptTypeOfProductANDHaveShortestList(TMachineOnProduction *
     TMachineOnProduction *aux = machineOnProduction;
     int shortestListID = 0;
     int shortestListSize = 0;
-
+    
     while(aux!=NULL){
-        if(aux->productionType == "T" || (aux->productionType == "C" && typeOfProduct == 1) || (aux->productionType == "P" && typeOfProduct == 2) || (aux->productionType == "A" && typeOfProduct == 3)){
-            if(aux->numberOfProducts < shortestListSize){
+        if(strcmp(aux->productionType, "T") == 0){
+            if(aux->numberOfProducts < shortestListSize || shortestListSize == 0){
+                shortestListSize = aux->numberOfProducts;
+                shortestListID = aux->id;
+            }
+        }
+        else if(strcmp(aux->productionType, "C") == 0 && typeOfProduct == 1){
+            if(aux->numberOfProducts < shortestListSize || shortestListSize == 0){
+                shortestListSize = aux->numberOfProducts;
+                shortestListID = aux->id;
+            }
+        }
+        else if(strcmp(aux->productionType, "P") == 0 && typeOfProduct == 2){
+            if(aux->numberOfProducts < shortestListSize || shortestListSize == 0){
+                shortestListSize = aux->numberOfProducts;
+                shortestListID = aux->id;
+            }
+        }
+        else if(strcmp(aux->productionType, "A") == 0 && typeOfProduct == 3){
+            if(aux->numberOfProducts < shortestListSize || shortestListSize == 0){
                 shortestListSize = aux->numberOfProducts;
                 shortestListID = aux->id;
             }
@@ -632,6 +650,7 @@ void addProductToMachineByID(TMachineOnProduction **machineOnProduction, THeadPr
     }
 
     TMachineOnProduction *aux = *machineOnProduction;
+    printf("CU");
     while(aux!=NULL){
         if(aux->id == id){
             aux->numberOfProducts = aux->numberOfProducts + 1;
@@ -667,12 +686,19 @@ void machineTerminateProduction(TMachineOnProduction **machineOnProduction, TPac
         if(aux->timeOfProduction <= 0){
             //Retira o produto terminado da lista de produção
             TLine *aux2 = aux->first;
+
+            if (aux->first == NULL){
+                return;
+            }
+
             int productID = aux2->type;
+
+            printf("cu\n");
             
             aux->first = aux->first->next;
             free(aux2);
             aux->numberOfProducts = aux->numberOfProducts - 1;
-
+            
             //Salva o produto na estatistica
             TPackaging *auxPac = *packaging;
             switch (productID)
@@ -810,13 +836,14 @@ TPackaging simulationLoop(THeadProduct *products, TMachineOnProduction *machineO
 
             //ADD NA LISTA
             int machineID = getMachinesThatAcceptTypeOfProductANDHaveShortestList(machineOnProductionm, newProduct);
+
             if(machineID != 0){
                 addProductToMachineByID(&machineOnProductionm, products, machineID, newProduct);
             }
         }
         //2. Remover um produto da linha
             //2.1. Para as maquinas que terminaram o seu tempo de processamento
-            machineTerminateProduction(&machineOnProductionm, &packaging, products);
+            //machineTerminateProduction(&machineOnProductionm, &packaging, products);
 
             //2.2. Para os produtos que pereceram na linha
             //removeExpiredProducts(&machineOnProductionm, products, &packaging);
