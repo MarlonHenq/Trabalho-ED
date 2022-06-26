@@ -1,3 +1,47 @@
-LEMBRAR DE CALCULAR OS PRODUTOS PERDIDOS NA ESTATISTICA
+{
+    printf("Função chamda é isso ai \n");
+    if (id == 0)
+    {
+        printf(errorColor "ID de máquina inválido!\n" resetColor);
+        return;
+    }
 
-LEMBRAR DE NO SIMULATION LOOP ADICIONAR A VERIFICAÇÂO DE CADA HORA E SOMAR O CUSTO EM KWH DE CADA MAQUINA
+    printf("Passou o if \n");
+
+    TMachineOnProduction *aux = *machineOnProduction;
+
+    printf("CU");
+    while (aux != NULL)
+    {
+        if (aux->id == id)
+        {
+            printf("Achou ID");
+            aux->numberOfProducts = aux->numberOfProducts + 1;
+            TLine *aux2 = aux->first;
+
+            if (aux->first == NULL)
+            {
+                aux->timeOfProduction = getTimeOfProductionProductOnMachine(*machineOnProduction, id, newProduct);
+
+                aux2 = (TLine *)malloc(sizeof(TLine));
+                aux2->type = newProduct;
+                aux2->entryTime = getDeteriorationTimeByProductID(products, newProduct);
+                aux2->next = NULL;
+            }
+
+            while (aux2 != NULL)
+            {
+                if (aux2->next == NULL)
+                {
+                    aux2->next = (TLine *)malloc(sizeof(TLine));
+                    aux2->next->type = newProduct;
+                    aux2->next->entryTime = getDeteriorationTimeByProductID(products, newProduct);
+                    aux2->next->next = NULL;
+                }
+                aux2 = aux2->next;
+            }
+            return;
+        }
+        aux = aux->next;
+    }
+}
