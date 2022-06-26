@@ -544,7 +544,7 @@ void tuxPrinter(int number)
 
 void progressPrint(int totalTime, double totalGain, double totalCost)
 {
-    int percentTime = (int)(totalTime / (twoYearsInSeconds / 10) * 10); // Gambirra já que o número é maior que o suportando em um int normal
+    int percentTime = (int)(totalTime / (twoYearsInSeconds/100)); // Gambirra já que o número é maior que o suportando em um int normal
     int percentMoney = (int)(totalGain / totalCost * 100);
 
     system("@cls||clear"); //Limpa Tela
