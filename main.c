@@ -22,9 +22,10 @@ const KWHCust = 1;                  // 1 real o Kilo Watt Hora
 const hourInSeconds = 3600;    // Total de segundos que tem em uma hora
 const twoYearsInSeconds = 63072000; // 63072000 Total de segundos que tem em 2 anos
 
-const char machinesFileName[20] = "Maquinas.csv"; // Arquivos para carregamento de dados
+const char machinesFileName[20] = "Maquinas.csv"; // Arquivos para carregar ou salvar dados
 const char productsFileName[20] = "Produtos.csv";
 const char simulationFileName[20] = "Simulacao.csv";
+const char resultsFileName[20] = "Resultados.csv";
 
 #pragma endregion
 
@@ -621,6 +622,49 @@ void createSimulationFile(int numberMaxMachines)
     fclose(file); // Fechando o arquivo
 }
 
+void createResultsFile(int cWasted, int pWasted, int aWasted, int cProduction, int pProduction, int aProduction, int totalTime, THeadProduct *products, TMachineOnProduction *machines){
+    FILE *file = fopen(resultsFileName, "w"); // Abertura do arquivo
+    if (file == NULL)
+    { // Verificação de erro de abertura do arquivo
+        printf(errorColor "Erro ao abrir o arquivo de resultados!\n" resetColor);
+        return;
+    }
+
+
+    float ccost = products->first->productionCost;
+    float pcost = products->first->next->productionCost;
+    float acost = products->first->next->next->productionCost;
+    float cgain = products->first->salePrice;
+    float pgain = products->first->next->salePrice;
+    float again = products->first->next->next->salePrice;
+
+    int hours = totalTime / 3600;
+
+
+    fprintf(file, "Tempo_simulação: %d\n", totalTime);
+
+    fprintf(file, "\n");
+
+    fprintf(file, "X Coxinha Peixe Almondega Total\n", cProduction);
+    fprintf(file, "Lotes_Empacotados %d %d %d %d\n", cProduction, pProduction, aProduction, cProduction + pProduction + aProduction);
+    fprintf(file, "Ganhos %.2f %.2f %.2f %.2f\n", cProduction * cgain, pProduction * pgain, aProduction * again, cProduction * cgain + pProduction * pgain + aProduction * again);
+    fprintf(file, "Lotes_Perdidos %d %d %d %d\n", cWasted, pWasted, aWasted, cWasted + pWasted + aWasted);
+    fprintf(file, "Custo %d %d %d %d\n", cWasted * ccost, pWasted * pcost, aWasted * acost, cWasted * ccost + pWasted * pcost + aWasted * acost);
+
+    fprintf(file, "\n");
+    fprintf(file, "\n");
+    fprintf(file, "MAQUINAS\n");
+
+    fprintf(file, "ID Modelo Custo\n", cProduction);
+    while (machines != NULL)
+    {
+        fprintf(file, "%d %s %d\n", machines->id, machines->model, machines->consumption*KWHCust*hours);
+        machines = machines->next;
+    }
+
+
+    fclose(file); // Fechando o arquivo
+}
 #pragma endregion
 
 #pragma region "DEBUG FUNCTIONS" // Funções de debug
@@ -997,11 +1041,13 @@ void testFunction(THeadProduct *products, TMachineOnProduction **machineOnProduc
         //1. Se o tempo de simulação for maior 2 anos
         if (totalTime >= twoYearsInSeconds){
             progressPrint(totalTime, totalGain, totalCost);
+            createResultsFile(packaging->cWasted, packaging->pWasted, packaging->aWasted, packaging->cProduction, packaging->pProduction, packaging->aProduction, totalTime, products, *machineOnProduction);
             return; 
         }
         //2. Se o Ganho passar a superar o custo total (Ou seja, passar a ter lucro)
         if (totalGain >= totalCost){
             progressPrint(totalTime, totalGain, totalCost);
+            createResultsFile(packaging->cWasted, packaging->pWasted, packaging->aWasted, packaging->cProduction, packaging->pProduction, packaging->aProduction, totalTime, products, *machineOnProduction);
             return;
         }
 
@@ -1010,6 +1056,20 @@ void testFunction(THeadProduct *products, TMachineOnProduction **machineOnProduc
 
             //ADD PREÇO de custo
             totalCost = totalCost + getCostByProductID(products, newProduct);
+
+            // ADD LOTE NA ESTETISTICA
+            if (newProduct == 1)
+            {
+                packaging->cBatches++;
+            }
+            else if (newProduct == 2)
+            {
+                packaging->pBatches++;
+            }
+            else if (newProduct == 3)
+            {
+                packaging->aBatches++;
+            }
 
             //ADD NA LISTA
             int machineID = getMachineThatAcceptTypeOfProductANDHaveShortestList(*machineOnProduction, newProduct);
@@ -1038,7 +1098,7 @@ void testFunction(THeadProduct *products, TMachineOnProduction **machineOnProduc
         updateDeteriorationTimeOfProducts(machineOnProduction);
 
         // 4. Calcular custo a cada uma hora das maquinas
-
+        
         // 5. Calcular Ganhos
         totalGain = (packaging->cProduction * getGainByProductID(products, 1));
         totalGain = totalGain + (packaging->pProduction * getGainByProductID(products, 2));
@@ -1057,6 +1117,7 @@ void testFunction(THeadProduct *products, TMachineOnProduction **machineOnProduc
         totalTime = totalTime + 1;
     }
 
+    
 
     // int newProduct = 3;
 
