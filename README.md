@@ -7,13 +7,16 @@ Gustavo Henrique Cardoso de Araújo
 Marlon Henrique Sanches
 
 # Disposição do trabalho:
-- O arquivo 'main.c' contém o código principal
-- O arquivo 'Trabalho.pdf' contém o pdf com a descrição de boa parte do trabalho (atendendo as instruções do .pdf pedido)
+- Este arquivo (README.md) ou (LEIA-ME.txt) é o inicio do trabalho e contém sua descrição.
+- O arquivo 'main.c' contém o código principal.
+- Os arquivos Maquinas.csv e Produtos.csv contém os dados de carregamento de maquinas e produtos para o funcionamento do programa.
+- Os aquivos Simulação.csv e Resultado.csv contém os dados de simulação e resultado da simulação (São gerados pelo programa).
+- O arquivo 'Trabalho.pdf' contém o pdf com a descrição de boa parte do trabalho (atendendo as instruções do .pdf pedido).
 - O vídeo pedido está no link: 
   
 
 # Como rodar o código:
-- Paro rodar o código é nescessário compila-lo
+- Para rodar o código é nescessário compila-lo
 - Para isso pode-se utilizar uma IDE com compilador e execução, ou um compilador para gerar um arquivo executável pelo seu sistema e logo após executar esse novo arquivo.
 
 <br>

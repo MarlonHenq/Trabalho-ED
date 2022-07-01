@@ -2,6 +2,7 @@
 // Marlon Henrique Sanches - RA: 2407388
 // Gustavo Henrique Cardoso de Araújo - RA: 2386712
 
+//LEIA O README.md ou LEIA-ME.txt
 
 #include <stdio.h>
 #include <stdlib.h>
