@@ -1071,7 +1071,7 @@ void testFunction(THeadProduct *products, TMachineOnProduction **machineOnProduc
             //ADD PREÇO de custo
             totalCost = totalCost + getCostByProductID(products, newProduct);
 
-            // ADD LOTE NA ESTETISTICA
+            // ADD LOTE NA ESTATISTICA
             if (newProduct == 1)
             {
                 packaging->cBatches++;
