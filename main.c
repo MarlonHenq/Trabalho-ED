@@ -22,11 +22,11 @@
 
 #pragma region "Constantes"
 // Valores HardCoded
-const productionTimeVariation = 10; // 10%
-const KWHCust = 1;                  // 1 real o Kilo Watt Hora
+const int productionTimeVariation = 10; // 10%
+const int KWHCust = 1;                  // 1 real o Kilo Watt Hora
 
-const hourInSeconds = 3600;    // Total de segundos que tem em uma hora
-const twoYearsInSeconds = 63072000; // 63072000 Total de segundos que tem em 2 anos
+const int hourInSeconds = 3600;    // Total de segundos que tem em uma hora
+const int twoYearsInSeconds = 63072000; // 63072000 Total de segundos que tem em 2 anos
 
 const char machinesFileName[20] = "Maquinas.csv"; // Arquivos para carregar ou salvar dados
 const char productsFileName[20] = "Produtos.csv";
