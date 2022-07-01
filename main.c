@@ -1,3 +1,8 @@
+// Autores:
+// Marlon Henrique Sanches - RA: 2407388
+// Gustavo Henrique Cardoso de Araújo - RA: 2386712
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
