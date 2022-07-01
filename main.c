@@ -622,7 +622,7 @@ void createSimulationFile(int numberMaxMachines)
     fclose(file); // Fechando o arquivo
 }
 
-void createResultsFile(int cWasted, int pWasted, int aWasted, int cProduction, int pProduction, int aProduction, int totalTime, THeadProduct *products, TMachineOnProduction *machines){
+void createResultsFile(int cWasted, int pWasted, int aWasted, int cProduction, int pProduction, int aProduction, int totalTime, THeadProduct *products, TMachineOnProduction *machines, int cBatches, int pBatches, int aBatches){
     FILE *file = fopen(resultsFileName, "w"); // Abertura do arquivo
     if (file == NULL)
     { // Verificação de erro de abertura do arquivo
@@ -649,7 +649,7 @@ void createResultsFile(int cWasted, int pWasted, int aWasted, int cProduction, i
     fprintf(file, "Lotes_Empacotados %d %d %d %d\n", cProduction, pProduction, aProduction, cProduction + pProduction + aProduction);
     fprintf(file, "Ganhos %.2f %.2f %.2f %.2f\n", cProduction * cgain, pProduction * pgain, aProduction * again, cProduction * cgain + pProduction * pgain + aProduction * again);
     fprintf(file, "Lotes_Perdidos %d %d %d %d\n", cWasted, pWasted, aWasted, cWasted + pWasted + aWasted);
-    fprintf(file, "Custo %d %d %d %d\n", cWasted * ccost, pWasted * pcost, aWasted * acost, cWasted * ccost + pWasted * pcost + aWasted * acost);
+    fprintf(file, "Custo %.2f %.2f %.2f %.2f\n", cBatches * ccost, pBatches * pcost, aBatches * acost, cBatches * ccost + pBatches * pcost + aBatches * acost);
 
     fprintf(file, "\n");
     fprintf(file, "\n");
@@ -1024,6 +1024,20 @@ void updateDeteriorationTimeOfProducts(TMachineOnProduction **machineOnProductio
     }
 }
 
+float calculateMachinesCostHour(TMachineOnProduction *machineOnProduction)
+{
+    TMachineOnProduction *aux = machineOnProduction;
+    float returnCost = 0;
+    while (aux != NULL)
+    {
+        returnCost = returnCost + aux->consumption*KWHCust;
+        aux = aux->next;
+    }
+
+    return returnCost;
+    
+}
+
 void testFunction(THeadProduct *products, TMachineOnProduction **machineOnProduction, double machinesTotalCost){
 
     int totalTime = 0;
@@ -1041,13 +1055,13 @@ void testFunction(THeadProduct *products, TMachineOnProduction **machineOnProduc
         //1. Se o tempo de simulação for maior 2 anos
         if (totalTime >= twoYearsInSeconds){
             progressPrint(totalTime, totalGain, totalCost);
-            createResultsFile(packaging->cWasted, packaging->pWasted, packaging->aWasted, packaging->cProduction, packaging->pProduction, packaging->aProduction, totalTime, products, *machineOnProduction);
+            createResultsFile(packaging->cWasted, packaging->pWasted, packaging->aWasted, packaging->cProduction, packaging->pProduction, packaging->aProduction, totalTime, products, *machineOnProduction, packaging->cBatches, packaging->pBatches, packaging->aBatches);
             return; 
         }
         //2. Se o Ganho passar a superar o custo total (Ou seja, passar a ter lucro)
         if (totalGain >= totalCost){
             progressPrint(totalTime, totalGain, totalCost);
-            createResultsFile(packaging->cWasted, packaging->pWasted, packaging->aWasted, packaging->cProduction, packaging->pProduction, packaging->aProduction, totalTime, products, *machineOnProduction);
+            createResultsFile(packaging->cWasted, packaging->pWasted, packaging->aWasted, packaging->cProduction, packaging->pProduction, packaging->aProduction, totalTime, products, *machineOnProduction, packaging->cBatches, packaging->pBatches, packaging->aBatches);
             return;
         }
 
@@ -1098,7 +1112,10 @@ void testFunction(THeadProduct *products, TMachineOnProduction **machineOnProduc
         updateDeteriorationTimeOfProducts(machineOnProduction);
 
         // 4. Calcular custo a cada uma hora das maquinas
-        
+        if (totalTime % hourInSeconds == 0){
+            totalCost = totalCost + calculateMachinesCostHour(*machineOnProduction);
+        }
+
         // 5. Calcular Ganhos
         totalGain = (packaging->cProduction * getGainByProductID(products, 1));
         totalGain = totalGain + (packaging->pProduction * getGainByProductID(products, 2));
@@ -1349,42 +1366,28 @@ void simulation(THeadProduct *headProduct, THeadMachine *headMachine)
     //simulationLoop(headProduct, machineOnProduction, (float)machinesTotalCost);
     testFunction(headProduct, &machineOnProduction, (float)machinesTotalCost);
     //simulationLoop2(headProduct, &machineOnProduction, (float)machinesTotalCost);
-
+    printf("\n\n");
+    printf(listColor "Simulação finalizada com sucesso!\n" resetColor);
+    printf(alertColor "O arquivo de resultados (%s) foi criado com sucesso!\n" resetColor, resultsFileName);
     userOp = NULL; // Valor aleatório para iniciar o loop (Já que a linguagem etende NULL como 0)
     while (true)
     {
-        printf(contrastColor "===================MENU SIMULAÇÃO===================\n" resetColor);
-        printf(contrastColor "1" resetColor " - Mostrar dados da simulação\n");
-        printf(contrastColor "2" resetColor " - Exportar dados para arquivo\n");
-        printf(contrastColor "3" resetColor " - Mostrar e exportar dados\n");
-        printf(contrastColor "0" resetColor " - Voltar\n");
         printf("\n");
-        printf("Escolha uma opção: ");
+        printf("\n");
+        printf(contrastColor "0" resetColor " - Voltar\n");
 
         scanf("%d", &userOp);
         getchar();
 
         switch (userOp)
         {
-        case 1:
-            system("@cls||clear"); // Limpa Tela
-            // printSimulationData(machineOnProduction);
-            break;
-        case 2:
-            system("@cls||clear"); // Limpa Tela
-            // exportSimulationData(machineOnProduction);
-            break;
-        case 3:
-            system("@cls||clear"); // Limpa Tela
-            // printSimulationData(machineOnProduction);
-            // exportSimulationData(machineOnProduction);
-            break;
         case 0:
             system("@cls||clear"); // Limpa Tela
             return;
             break;
         default:
-            printf(errorColor "Opção inválida!\n" resetColor);
+            system("@cls||clear"); // Limpa Tela
+            return;
             break;
         }
     }
