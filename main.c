@@ -1044,7 +1044,7 @@ float calculateMachinesCostHour(TMachineOnProduction *machineOnProduction)
     
 }
 
-void testFunction(THeadProduct *products, TMachineOnProduction **machineOnProduction, double machinesTotalCost){
+void simulationLoop(THeadProduct *products, TMachineOnProduction **machineOnProduction, double machinesTotalCost){
 
     int totalTime = 0;
     double totalCost = machinesTotalCost;
@@ -1177,7 +1177,7 @@ void simulation(THeadProduct *headProduct, THeadMachine *headMachine)
     //TPackaging *results = alocatePackaging(0, 0, 0, 0, 0, 0);
 
     //simulationLoop(headProduct, machineOnProduction, (float)machinesTotalCost);
-    testFunction(headProduct, &machineOnProduction, (float)machinesTotalCost);
+    simulationLoop(headProduct, &machineOnProduction, (float)machinesTotalCost);
     //simulationLoop2(headProduct, &machineOnProduction, (float)machinesTotalCost);
     printf("\n\n");
     printf(listColor "Simulação finalizada com sucesso!\n" resetColor);
